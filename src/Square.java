@@ -5,6 +5,10 @@ public class Square {
     Square next;
     String name;
 
+    public Square(){
+
+    }
+
     public Square(String name)
     {
         this.name = name;
