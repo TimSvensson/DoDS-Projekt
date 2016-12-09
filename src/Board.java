@@ -20,8 +20,8 @@ public class Board {
         }
     }
 
-    public  Square movePlayer(Player player, int die1, int die2){
-        player.setPosition(die1+die2);
+    public Square movePlayer(Player player, Dice dice){
+        player.setPosition(player.tossDie(dice));
         // Om spelare hamnar i fängelset, så fixar vi kod till det sen
 
         int currentPlayerPosition = player.getPosition();
@@ -69,6 +69,11 @@ public class Board {
     public List_t getListOfSquares() {
         return listOfSquares;
     }
+
+    public void setListOfSquares(List_t listOfSquares) {
+        this.listOfSquares = listOfSquares;
+    }
+
     // TODO (KANSKE) kan vara bra att hålla koll på antalet squares.
 }
 /**

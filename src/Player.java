@@ -38,7 +38,7 @@ public class Player {
         return name;
     }
 
-    public int TossDie(Dice die){
+    public int tossDie(Dice die){
         int die1 = die.getDie1();
         int die2 = die.getDie2();
         System.out.println(getID() + "tossed die 1 and got:" + die1 + "tossed die2 and got:"+ die2);

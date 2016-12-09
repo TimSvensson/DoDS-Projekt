@@ -38,7 +38,7 @@ public class List_t {
     }
 
     public void fillList(String [] listOfNames) {
-        int desiredLength = 40;
+        int desiredLength = 5; // Den ska vara 40 när vi är klara, men framtills dess är den det vi vill att den ska vara
 
         for (int i = 0; i < desiredLength; i++) {
             Square s = new Square(listOfNames[i], i);

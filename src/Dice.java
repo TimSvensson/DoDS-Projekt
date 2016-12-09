@@ -23,8 +23,8 @@ public class Dice {
         // a random number between 1 and 6.
         //die1 = (int)(Math.random()*6) + 1;
         //die2 = (int)(Math.random()*6) + 1;
-        die1 = 2;
-        die2 = 2;
+        die1 = 0; // Tillfälligt. Ta bort denna kommentar när den inte längre behövs
+        die2 = 1;
     }
 
     public int getDie1() {
