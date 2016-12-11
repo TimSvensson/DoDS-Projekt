@@ -22,6 +22,7 @@ import javafx.stage.Stage;
 
 public class Graphics extends Application {
 
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -42,64 +43,35 @@ public class Graphics extends Application {
         int widthHalf = rectWidth / 2;
         int heightHalf = rectHeight / 2;
 
-        for (int i = 0; i < 11; i++) {
-            if( 0 < i && i < 10) {
-                Rectangle r = new Rectangle(widthHalf, rectHeight);
-                r.setFill(Color.TRANSPARENT);
-                r.setStroke(Color.BLACK);
-                r.setStrokeWidth(3);
-                grid.add(r, i, 0);
-            }
-            else {
-                Rectangle r = new Rectangle(rectWidth, rectHeight);
-                r.setFill(Color.TRANSPARENT);
-                r.setStroke(Color.BLACK);
-                r.setStrokeWidth(3);
-                grid.add(r, i, 0);
-            }
-        }
-        for (int i = 0; i < 10; i++) {
-            if (i == 9) {
-                Rectangle r = new Rectangle(rectWidth, rectHeight);
-                r.setFill(Color.TRANSPARENT);
-                r.setStroke(Color.RED);
-                r.setStrokeWidth(3);
-                grid.add(r, 10, 10);
-            }
-            else {
-                Rectangle r = new Rectangle(rectWidth, heightHalf);
-                r.setFill(Color.TRANSPARENT);
-                r.setStroke(Color.RED);
-                r.setStrokeWidth(3);
-                grid.add(r, 10, i+1);
+        int j = 1;
+        for (int i = 1; i < 11; i++) {
+            Square r1 = new Square(rectWidth, heightHalf);
+            Square r2 = new Square(rectWidth, heightHalf);
+            Square r3 = new Square(widthHalf, rectHeight);
+            Square r4 = new Square(widthHalf, rectHeight);
 
-            }
-        }
-        for (int i = 0; i < 10; i++) {
-            if (i == 9) {
-                Rectangle r = new Rectangle(rectWidth, rectHeight);
-                r.setFill(Color.TRANSPARENT);
-                r.setStroke(Color.BLUE);
-                r.setStrokeWidth(3);
-                grid.add(r, 0, 10);
-            }
-            else {
-                Rectangle r = new Rectangle(rectWidth, heightHalf);
-                r.setFill(Color.TRANSPARENT);
-                r.setStroke(Color.BLUE);
-                r.setStrokeWidth(3);
-                grid.add(r, 0, i+1);
+            r1.fillDefaults();
+            r2.fillDefaults();
+            r3.fillDefaults();
+            r4.fillDefaults();
 
+            grid.add(r1, 0, j);
+            grid.add(r2, 11, j);
+            grid.add(r3, i, 0);
+            grid.add(r4, i, 12);
+            j++;
+        }
+        for (int i = 0; i < 12; i++) {
+            if (i == 0 || i == 11) {
+                Square r1 = new Square(rectWidth, rectHeight);
+                Square r2 = new Square(rectWidth, rectHeight);
+                r1.fillDefaults();
+                r2.fillDefaults();
+                grid.add(r1, i, 0);
+                grid.add(r2, i, 12);
             }
         }
 
-        for (int i = 0; i < 9; i++) {
-            Rectangle r = new Rectangle(widthHalf, rectHeight);
-            r.setFill(Color.TRANSPARENT);
-            r.setStroke(Color.YELLOW);
-            r.setStrokeWidth(3);
-            grid.add(r, i+1, 10);
-        }
 
         Scene scene = new Scene(grid, 800, 800);
         primaryStage.setScene(scene);

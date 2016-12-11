@@ -1,7 +1,10 @@
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+
 /**
  * Created by axelhellman on 2016-12-08.
  */
-public class Square {
+public class Square extends Rectangle{
     Square next;
     String name;
     int position;
@@ -10,12 +13,20 @@ public class Square {
 
     }
 
+    public Square(int width, int height) {
+        super (width, height);
+    }
     public Square(String name, int position)
     {
         this.name = name;
         this.position = position;
     }
 
+    protected void fillDefaults() {
+        this.setFill(Color.TRANSPARENT);
+        this.setStroke(Color.BLACK);
+        this.setStrokeWidth(3);
+    }
 
     public String getName()
     {
