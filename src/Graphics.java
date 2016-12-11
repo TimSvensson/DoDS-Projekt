@@ -1,5 +1,3 @@
-
-
 import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
