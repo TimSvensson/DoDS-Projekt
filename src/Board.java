@@ -1,8 +1,8 @@
-package itmonopol;
+
 /**
  * Created by axelhellman on 2016-12-08.
  */
-protected class Board {
+public class Board {
 
     Player [] listOfPlayer;
     List_t listOfSquares;
@@ -12,7 +12,7 @@ protected class Board {
     Deck deck_3;
     int currentPlayer = 0;
 
-    protected Board(int totalPlayer) {
+    public Board(int totalPlayer) {
         listOfPlayer = new Player[totalPlayer];
         this.totalPlayer = totalPlayer;
         for (int i = 0; i < listOfPlayer.length; i++) {
@@ -20,7 +20,7 @@ protected class Board {
         }
     }
 
-    protected Square movePlayer(Player player, Dice dice){
+    public Square movePlayer(Player player, Dice dice){
         player.setPosition(player.tossDie(dice));
         // Om spelare hamnar i fängelset, så fixar vi kod till det sen
 
@@ -38,24 +38,24 @@ protected class Board {
         return toReturn;
     }
 
-    protected Player[] getListOfPlayer() {
+    public Player[] getListOfPlayer() {
         return listOfPlayer;
     }
 
-    protected Player getCurrentPlayer() {
+    public Player getCurrentPlayer() {
         return listOfPlayer[currentPlayer];
     }
 
-    protected void nextTurn() {
+    public void nextTurn() {
         if(currentPlayer++ == listOfPlayer.length){
             currentPlayer = 0;
         }
     }
 
-    protected int getTotalPlayer() {
+    public int getTotalPlayer() {
         return totalPlayer;
     }
-    protected Player getPlayerByID(int id){
+    public Player getPlayerByID(int id){
         Player toReturn = null;
         for (Player p : listOfPlayer) {
             if (p.getID() == id) {
@@ -66,11 +66,11 @@ protected class Board {
         return toReturn;
     }
 
-    protected List_t getListOfSquares() {
+    public List_t getListOfSquares() {
         return listOfSquares;
     }
 
-    protected void setListOfSquares(List_t listOfSquares) {
+    public void setListOfSquares(List_t listOfSquares) {
         this.listOfSquares = listOfSquares;
     }
 
@@ -80,7 +80,7 @@ protected class Board {
 
 
 
- protected boolean hasWinner() {
+ public boolean hasWinner() {
         int ingame = 0;
         for(Player player:players){
         if(!player.isBrokeOut()){
@@ -90,7 +90,7 @@ protected class Board {
         return ingame <= 1;
         }
 
-protected Player getWinner() {
+public Player getWinner() {
         if(!hasWinner()){ return null; }
         for(Player player:players){
         if(!player.isBrokeOut()){ return player; }
@@ -98,7 +98,7 @@ protected Player getWinner() {
         return null;
         }
 
-protected Player getMaxMoneyPlayer() {
+public Player getMaxMoneyPlayer() {
         Player maxplayer = null;
         for(Player player:players){
         if(maxplayer == null || maxplayer.getMoney().getMoney() < player.getMoney().getMoney()){
@@ -108,12 +108,12 @@ protected Player getMaxMoneyPlayer() {
         return maxplayer;
         }
 
-protected int normalizePosition(int position) {
+public int normalizePosition(int position) {
         return position % squares.length;
         }
 
 
-protected int getTotalSquare() {
+public int getTotalSquare() {
         return squares.length;
         }
 

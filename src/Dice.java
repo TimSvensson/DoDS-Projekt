@@ -1,5 +1,3 @@
-package itmonopol;
-
 /**
  * Created by axelhellman on 2016-12-08.
  */
@@ -7,20 +5,20 @@ package itmonopol;
  *
  * @author axelhellman
  */
-protected class Dice {
+public class Dice {
 
     protected int die1;   // Number showing on the first die.
     protected int die2;
 
 
 
-    protected Dice() {
+    public Dice() {
         // Constructor.  Rolls the dice, so that they initially
         // show some random values.
         roll();  // Call the roll() method to roll the dice.
     }
 
-    protected void roll() {
+    public void roll() {
         // Roll the dice by setting each of the dice to be
         // a random number between 1 and 6.
         //die1 = (int)(Math.random()*6) + 1;
@@ -29,15 +27,15 @@ protected class Dice {
         die2 = 1;
     }
 
-    protected int getDie1() {
+    public int getDie1() {
         // Return the number showing on the first die.
         return die1;
     }
-    protected int getDie2() {
+    public int getDie2() {
         return die2; //Return the number of die 2
     }
 
-    protected int getTotal()
+    public int getTotal()
     {
         return die1 + die2;
     }

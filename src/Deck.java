@@ -1,15 +1,15 @@
-package itmonopol;
+
 /**
  * Created by axelhellman on 2016-12-09.
  */
-protected class Deck {
+public class Deck {
     Card[] cardarray;
 
-    protected Deck(Card[] cardarray) {
+    public Deck(Card[] cardarray) {
         this.cardarray = cardarray;
     }
 
-    protected Card[] getCardarray() {
+    public Card[] getCardarray() {
         return cardarray;
     }
 }
