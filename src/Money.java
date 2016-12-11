@@ -1,26 +1,28 @@
+package itmonopol;
+
 /**
  * Created by axelhellman on 2016-12-08.
  */
-public class Money {
+protected class Money {
     int money;
 
-    public Money(){
+    protected Money(){
         this(0);
     }
-    public Money (int Money){
+    protected Money (int Money){
         this.money = money;
     }
 
-    public int getMoney() {
+    protected int getMoney() {
         return money;
     }
-    public void addMoney(int amount){
+    protected void addMoney(int amount){
         money += amount;
     }
-    public void removeMoney(int amount){
+    protected void removeMoney(int amount){
         money -= amount;
     }
-    public boolean isBroke(){
+    protected boolean isBroke(){
         return money <= 0;
     }
 }

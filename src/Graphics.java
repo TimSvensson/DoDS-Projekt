@@ -1,3 +1,5 @@
+package itmonopol;
+
 import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -20,15 +22,15 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-public class Graphics extends Application {
+protected class Graphics extends Application {
 
 
-    public static void main(String[] args) {
+    protected static void main(String[] args) {
         launch(args);
     }
 
     @Override
-    public void start(Stage primaryStage) {
+    protected void start(Stage primaryStage) {
         primaryStage.setTitle("Monopol!");
         primaryStage.setFullScreen(false);
         GridPane grid = new GridPane();

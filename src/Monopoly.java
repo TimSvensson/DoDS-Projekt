@@ -1,27 +1,30 @@
+package itmonopol;
 /**
  * Created by axelhellman on 2016-12-08.
  */
 
 ////String ip (Player); Kanske ska länka detta i monopolet istället så att id:et länkar till en spelares IP
-public class Monopoly {
+protected class Monopoly {
         Dice dice = new Dice();
         Board board;
         // String [] list_of_ips;
         // String [] list_of_playerID; // Länkar ihop spelarnas id:n med ip:addresserna
 
-        public Monopoly(int totalPlayer) {
+        protected Monopoly(int totalPlayer) {
                 board = new Board(totalPlayer);
         }
 
-        public Dice getDice() {
+        protected Dice getDice() {
                 return dice;
         }
 
-        public Board getBoard() {
+        protected Board getBoard() {
                 return board;
         }
 
-        public static void main(String[] args) {
+
+
+        protected static void main(String[] args) {
         //TODO Gör en while med scanner som bestämmer hur många spelar vi ska ha med i spelet.
                 int numberOfPlayers = 1; // Ändra den till vad du vill Adam
                 Monopoly game = new Monopoly(numberOfPlayers); // Nytt spel skapas

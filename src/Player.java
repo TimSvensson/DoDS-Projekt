@@ -1,7 +1,9 @@
+package itmonopol;
+
 /**
  * Created by axelhellman on 2016-12-08.
  */
-public class Player {
+protected class Player {
     int id;
     int position = 0;
     int totalwalk = 0;
@@ -10,35 +12,35 @@ public class Player {
     Money money = new Money(5000); //haha u poor bitch?
 
 
-    public Player(int id, String name) {
+    protected Player(int id, String name) {
         this.id = id;
         this.name = name;
     }
 
 
-    public int getTotalWalk(){
+    protected int getTotalWalk(){
         return totalwalk;
     }
 
 
-   /* *public String getIp() {
+   /* *protected String getIp() {
         return ip;
     }*/
 
-    public int getPosition(){
+    protected int getPosition(){
         return position;
     }
-    public void setPosition(int position){
+    protected void setPosition(int position){
         this.position = position;
     }
-    public int getID(){
+    protected int getID(){
         return id;
     }
-    public String getName(){
+    protected String getName(){
         return name;
     }
 
-    public int tossDie(Dice die){
+    protected int tossDie(Dice die){
         int die1 = die.getDie1();
         int die2 = die.getDie2();
         System.out.println(getID() + "tossed die 1 and got:" + die1 + "tossed die2 and got:"+ die2);

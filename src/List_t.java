@@ -1,13 +1,15 @@
+package itmonopol;
+
 /**
  * Created by axelhellman on 2016-12-08.
  */
-public class List_t {
+protected class List_t {
     Square first;
     Square last;
     int length; // = 40;
 
 
-    public List_t() {
+    protected List_t() {
         int ack = 15;
         this.first = new Square();
         this.first = insert(first, ack);
@@ -22,22 +24,22 @@ public class List_t {
         return f;
     }
 
-    public Square getFirst() {
+    protected Square getFirst() {
         return first;
     }
 
-    public Square getLast() {
+    protected Square getLast() {
         return last;
     }
 
     // OBS!!! Haubir och Axel har föreslagit dessa metoder och konstruktor(er) till vår länkade lista
-    public List_t(String [] listOfNames) {
+    protected List_t(String [] listOfNames) {
         this.first = null;
         this.last = null;
         fillList(listOfNames);
     }
 
-    public void fillList(String [] listOfNames) {
+    protected void fillList(String [] listOfNames) {
         int desiredLength = 5; // Den ska vara 40 när vi är klara, men framtills dess är den det vi vill att den ska vara
 
         for (int i = 0; i < desiredLength; i++) {
@@ -47,7 +49,7 @@ public class List_t {
 
     }
 
-    public void fillListAux(Square toInsert) {
+    protected void fillListAux(Square toInsert) {
         if (this.first == null) {
             this.first = this.last = toInsert;
         }

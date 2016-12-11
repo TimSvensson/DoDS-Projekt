@@ -1,22 +1,25 @@
+package itmonopol;
+
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 /**
  * Created by axelhellman on 2016-12-08.
  */
-public class Square extends Rectangle{
+protected class Square extends Rectangle{
     Square next;
     String name;
     int position;
 
-    public Square(){
+    protected Square(){
 
     }
 
-    public Square(int width, int height) {
+    protected Square(int width, int height) {
         super (width, height);
     }
-    public Square(String name, int position)
+
+    protected Square(String name, int position)
     {
         this.name = name;
         this.position = position;
@@ -28,20 +31,20 @@ public class Square extends Rectangle{
         this.setStrokeWidth(3);
     }
 
-    public String getName()
+    protected String getName()
     {
         return name;
     }
 
-    public int getPosition() {
+    protected int getPosition() {
         return position;
     }
 
-    public Square getNext() {
+    protected Square getNext() {
         return next;
     }
 
-    public void setNext(Square next) {
+    protected void setNext(Square next) {
         this.next = next;
     }
 }
