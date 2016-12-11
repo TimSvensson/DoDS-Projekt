@@ -78,7 +78,7 @@ public class Graphics extends Application {
 
         primaryStage.show();
 
-/*
+
         Text scenetitle = new Text("Welcome");
         scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
         grid.add(scenetitle, 0, 0, 2, 1);
@@ -108,7 +108,7 @@ public class Graphics extends Application {
             actiontarget.setFill(Color.FIREBRICK);
             actiontarget.setText(userTextField.getText());
 
-        });*/
+        });
     }
 
 
