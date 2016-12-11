@@ -28,7 +28,7 @@ public class Graphics extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("JavaFX Welcome");
+        primaryStage.setTitle("Monopol!");
         primaryStage.setFullScreen(false);
         GridPane grid = new GridPane();
         grid.setGridLinesVisible(true);
@@ -45,35 +45,49 @@ public class Graphics extends Application {
         for (int i = 0; i < 11; i++) {
             if( 0 < i && i < 10) {
                 Rectangle r = new Rectangle(widthHalf, rectHeight);
+                r.setFill(Color.TRANSPARENT);
+                r.setStroke(Color.BLACK);
+                r.setStrokeWidth(3);
                 grid.add(r, i, 0);
             }
             else {
                 Rectangle r = new Rectangle(rectWidth, rectHeight);
+                r.setFill(Color.TRANSPARENT);
+                r.setStroke(Color.BLACK);
+                r.setStrokeWidth(3);
                 grid.add(r, i, 0);
             }
         }
-        for (int i = 0; i < 11; i++) {
-            if (i == 10) {
+        for (int i = 0; i < 10; i++) {
+            if (i == 9) {
                 Rectangle r = new Rectangle(rectWidth, rectHeight);
-                r.setFill(Paint.valueOf("RED"));
+                r.setFill(Color.TRANSPARENT);
+                r.setStroke(Color.RED);
+                r.setStrokeWidth(3);
                 grid.add(r, 10, 10);
             }
             else {
                 Rectangle r = new Rectangle(rectWidth, heightHalf);
-                r.setFill(Paint.valueOf("RED"));
+                r.setFill(Color.TRANSPARENT);
+                r.setStroke(Color.RED);
+                r.setStrokeWidth(3);
                 grid.add(r, 10, i+1);
 
             }
         }
-        for (int i = 0; i < 11; i++) {
-            if (i == 10) {
+        for (int i = 0; i < 10; i++) {
+            if (i == 9) {
                 Rectangle r = new Rectangle(rectWidth, rectHeight);
-                r.setFill(Paint.valueOf("BLUE"));
+                r.setFill(Color.TRANSPARENT);
+                r.setStroke(Color.BLUE);
+                r.setStrokeWidth(3);
                 grid.add(r, 0, 10);
             }
             else {
                 Rectangle r = new Rectangle(rectWidth, heightHalf);
-                r.setFill(Paint.valueOf("BLUE"));
+                r.setFill(Color.TRANSPARENT);
+                r.setStroke(Color.BLUE);
+                r.setStrokeWidth(3);
                 grid.add(r, 0, i+1);
 
             }
@@ -81,7 +95,9 @@ public class Graphics extends Application {
 
         for (int i = 0; i < 9; i++) {
             Rectangle r = new Rectangle(widthHalf, rectHeight);
-            r.setFill(Paint.valueOf("YELLOW"));
+            r.setFill(Color.TRANSPARENT);
+            r.setStroke(Color.YELLOW);
+            r.setStrokeWidth(3);
             grid.add(r, i+1, 10);
         }
 
