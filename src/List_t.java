@@ -30,6 +30,14 @@ public class List_t {
         return last;
     }
 
+    public void setFirst(Square first) {
+        this.first = first;
+    }
+
+    public void setLast(Square last) {
+        this.last = last;
+    }
+
     // OBS!!! Haubir och Axel har föreslagit dessa metoder och konstruktor(er) till vår länkade lista
     public List_t(String [] listOfNames) {
         this.first = null;
@@ -43,6 +51,7 @@ public class List_t {
         for (int i = 0; i < desiredLength; i++) {
             Square s = new Square(listOfNames[i], i);
             fillListAux(s);
+            this.length++;
         }
 
     }
@@ -57,7 +66,17 @@ public class List_t {
         }
     }
 
-    /*public List_t recreateList(JSONObject toRecreate) {
+    /*public void deleteList() {
+        Square s = this.getFirst();
+
+        for (int i = 0; i < this.length; i++) {
+            Square n = s.getNext();
+            this.setFirst(null);
+            s = n;
+        }
+    }
+
+    public List_t recreateList(JSONObject toRecreate) {
         int newLength = (Integer) toRecreate.get("length");
 
         while ()

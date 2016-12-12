@@ -38,8 +38,8 @@ public class Monopoly {
         }*/
 
     public static void main(String[] args) {
-        //TODO Gör en while med scanner som bestämmer hur många spelar vi ska ha med i spelet.
-        int numberOfPlayers = 1; // Ändra den till vad du vill Adam
+        //TODO Gör en while med scanner som bestämmer hur många spelare vi ska ha med i spelet.
+        int numberOfPlayers = 10; // Ändra den till vad du vill Adam
         Monopoly game = new Monopoly(numberOfPlayers); // Nytt spel skapas
 
         System.out.println("Game created");
@@ -53,20 +53,18 @@ public class Monopoly {
 
         b.setListOfSquares(l); // Din länkade lista tillhör nu ditt bräde.
 
-        Square currentSquare = b.movePlayer(b.listOfPlayer[0], d); // Kolla, vi flyttade till och med en spelare åt dig.
+        Square currentSquare = b.movePlayer(b.getListOfPlayers()[0], d); // Kolla, vi flyttade till och med en spelare åt dig.
 
-        // Relevant json-kod för att överföra gamestates nedan
-
+        // TODO!!! Problem med att konvertera gamestate till JSON pga StackOverflowError. Misstänker att vi någonstans i klasshierarkin använder en cirkulär referens...
+        /* Relevant json-kod för att överföra gamestates nedan
         Gson gson = new Gson();
-
-
 
         String jsonGamestate = gson.toJson(game); // Skapar en jsonsträng av nuvarande gamestate
         System.out.println(jsonGamestate);
-        // TODO!!! Kod för att skicka och jsonGamestate här
+        // TODO!!! Kod för att skicka och ta emot jsonGamestate här
 
         // Följande kod tar emot och återskapar en gamestate
-        Monopoly newGamestate = gson.fromJson(jsonGamestate, Monopoly.class);
+        Monopoly newGamestate = gson.fromJson(jsonGamestate, Monopoly.class);*/
 
         // Nu har det nya Monopoly-objektet och alla dess nästlade objekt återskapats hos mottagaren!
 

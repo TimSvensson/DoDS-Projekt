@@ -4,7 +4,7 @@
  */
 public class Board {
 
-    Player [] listOfPlayer;
+    Player [] listOfPlayers;
     List_t listOfSquares;
     int totalPlayer = 0;
     Deck deck_1;
@@ -13,10 +13,10 @@ public class Board {
     int currentPlayer = 0;
 
     public Board(int totalPlayer) {
-        listOfPlayer = new Player[totalPlayer];
+        listOfPlayers = new Player[totalPlayer];
         this.totalPlayer = totalPlayer;
-        for (int i = 0; i < listOfPlayer.length; i++) {
-            listOfPlayer[i] = new Player(i, "Player " + (i + 1));
+        for (int i = 0; i < listOfPlayers.length; i++) {
+            listOfPlayers[i] = new Player(i, "Player " + (i + 1));
         }
     }
 
@@ -38,16 +38,16 @@ public class Board {
         return toReturn;
     }
 
-    public Player[] getListOfPlayer() {
-        return listOfPlayer;
+    public Player[] getListOfPlayers() {
+        return listOfPlayers;
     }
 
     public Player getCurrentPlayer() {
-        return listOfPlayer[currentPlayer];
+        return listOfPlayers[currentPlayer];
     }
 
     public void nextTurn() {
-        if(currentPlayer++ == listOfPlayer.length){
+        if(currentPlayer++ == listOfPlayers.length){
             currentPlayer = 0;
         }
     }
@@ -55,9 +55,10 @@ public class Board {
     public int getTotalPlayer() {
         return totalPlayer;
     }
+
     public Player getPlayerByID(int id){
         Player toReturn = null;
-        for (Player p : listOfPlayer) {
+        for (Player p : listOfPlayers) {
             if (p.getID() == id) {
                 toReturn = p;
             }
@@ -73,6 +74,11 @@ public class Board {
     public void setListOfSquares(List_t listOfSquares) {
         this.listOfSquares = listOfSquares;
     }
+
+    /*public void deleteListOfSquares() {
+        this.listOfSquares.deleteList();
+        this.listOfSquares = null;
+    }*/
 
     // TODO (KANSKE) kan vara bra att hålla koll på antalet squares.
 }
