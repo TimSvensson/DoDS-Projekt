@@ -41,7 +41,7 @@ public class Player {
     public int tossDie(Dice die){
         int die1 = die.getDie1();
         int die2 = die.getDie2();
-        System.out.println("Player " + getID() + " tossed die 1 and got: " + die1 + "\nPlayer" + getID() + " tossed die2 and got: "+ die2);
+        System.out.println("Player " + getID() + " tossed die 1 and got: " + die1 + "\nPlayer " + getID() + " tossed die2 and got: "+ die2);
         return (die1 + die2);
     }
 }
