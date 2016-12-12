@@ -1,7 +1,3 @@
-import com.alibaba.fastjson.*;
-
-import java.util.LinkedList;
-
 /**
  * Created by axelhellman on 2016-12-08.
  */

@@ -1,5 +1,3 @@
-import com.alibaba.fastjson.*;
-
 /**
  * Created by axelhellman on 2016-12-09.
  */
@@ -15,10 +13,10 @@ public class Card {
         return descCard;
     }
 
-    public Card recreateCard(JSONObject toRecreate) {
+    /*public Card recreateCard(JSONObject toRecreate) {
         String newDescCard = (String) toRecreate.get("descCard");
         Card toReturn = new Card(newDescCard);
 
         return toReturn;
-    }
+    }*/
 }

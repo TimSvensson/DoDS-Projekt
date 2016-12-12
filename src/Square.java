@@ -1,4 +1,3 @@
-import com.alibaba.fastjson.*t;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 

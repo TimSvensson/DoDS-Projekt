@@ -1,7 +1,3 @@
-import com.alibaba.fastjson.*;
-
-
-
 /**
  * Created by axelhellman on 2016-12-09.
  */
@@ -9,11 +5,11 @@ public class Deck {
     Card[] cardArray;
 
     public Deck(Card[] cardarray) {
-        this.cardarray = cardarray;
+        this.cardArray = cardarray;
     }
 
     public Card[] getCardarray() {
-        return cardarray;
+        return cardArray;
     }
 
     // recreateCard() finns i Card-klassen, skumt nog hittar inte Deck-klassen den just nu.

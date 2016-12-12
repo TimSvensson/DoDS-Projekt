@@ -25,7 +25,15 @@ public class Monopoly {
         return board;
     }
 
-        /*public Monopoly recreateMonopoly(JSONObject toRecreate) {
+    public void setDice(Dice dice) {
+        this.dice = dice;
+    }
+
+    public void setBoard(Board board) {
+        this.board = board;
+    }
+
+/*public Monopoly recreateMonopoly(JSONObject toRecreate) {
 
         }*/
 
@@ -33,6 +41,8 @@ public class Monopoly {
         //TODO Gör en while med scanner som bestämmer hur många spelar vi ska ha med i spelet.
         int numberOfPlayers = 1; // Ändra den till vad du vill Adam
         Monopoly game = new Monopoly(numberOfPlayers); // Nytt spel skapas
+
+        System.out.println("Game created");
 
         Board b = game.getBoard(); // Tillgång till spelbrädet
         Dice d = game.getDice(); // Tillgång till speltärningarna
@@ -45,18 +55,21 @@ public class Monopoly {
 
         Square currentSquare = b.movePlayer(b.listOfPlayer[0], d); // Kolla, vi flyttade till och med en spelare åt dig.
 
-        /* Relevant json-kod för att överföra gamestates nedan
+        // Relevant json-kod för att överföra gamestates nedan
 
         Gson gson = new Gson();
-        String jsonGamestate = gson.toJson(game); // Skapar en jsonsträng av nuvarande gamestate
 
+
+
+        String jsonGamestate = gson.toJson(game); // Skapar en jsonsträng av nuvarande gamestate
+        System.out.println(jsonGamestate);
         // TODO!!! Kod för att skicka och jsonGamestate här
 
         // Följande kod tar emot och återskapar en gamestate
         Monopoly newGamestate = gson.fromJson(jsonGamestate, Monopoly.class);
 
         // Nu har det nya Monopoly-objektet och alla dess nästlade objekt återskapats hos mottagaren!
-        */
+
 
     }
 
