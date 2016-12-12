@@ -1,3 +1,7 @@
+import com.alibaba.fastjson.*;
+
+import java.util.LinkedList;
+
 /**
  * Created by axelhellman on 2016-12-08.
  */
@@ -56,6 +60,16 @@ public class List_t {
             this.last = this.last.getNext();
         }
     }
+
+    /*public List_t recreateList(JSONObject toRecreate) {
+        int newLength = (Integer) toRecreate.get("length");
+
+        while ()
+        Square newFirst = recreateSquare((Square) toRecreate.get("first"));
+        Square newLast = recreateSquare((Square) toRecreate.get("last"));
+
+
+    }*/
 }
 
 

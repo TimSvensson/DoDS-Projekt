@@ -1,6 +1,9 @@
 /**
  * Created by axelhellman on 2016-12-08.
  */
+
+import com.alibaba.fastjson.*;
+
 /**
  *
  * @author axelhellman
@@ -10,7 +13,10 @@ public class Dice {
     protected int die1;   // Number showing on the first die.
     protected int die2;
 
-
+    public Dice(int die1, int die2) {
+        this.die1 = die1;
+        this.die2 = die2;
+    }
 
     public Dice() {
         // Constructor.  Rolls the dice, so that they initially
@@ -39,4 +45,13 @@ public class Dice {
     {
         return die1 + die2;
     }
+
+    /*public Dice recreateDice(JSONObject toRecreate) {
+        int newDie1 = (Integer) toRecreate.get("die1");
+        int newDie2 = (Integer) toRecreate.get("die2");
+
+        Dice toReturn = new Dice(newDie1, newDie2);
+
+        return toReturn;
+    } */
 }

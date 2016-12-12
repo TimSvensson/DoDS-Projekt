@@ -1,3 +1,4 @@
+import com.alibaba.fastjson.*t;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -45,6 +46,19 @@ public class Square extends Rectangle{
     public void setNext(Square next) {
         this.next = next;
     }
+
+    // TODO!!!! Kolla över hur newNext ska genereras.
+    /*public Square recreateSquare(JSONObject toRecreate) {
+        String newName = (String) toRecreate.get("name");
+        int newPosition = (Integer) toRecreate.get("position");
+        JSONArray jsonNewNext = toRecreate.getJSONArray("next");
+
+
+        Square toReturn = new Square(newName, newPosition);
+        toReturn.setNext(newNext);
+
+        return toReturn;
+    }*/
 }
 
 
