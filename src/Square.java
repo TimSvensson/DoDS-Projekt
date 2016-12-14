@@ -4,18 +4,14 @@ import javafx.scene.shape.Rectangle;
 /**
  * Created by axelhellman on 2016-12-08.
  */
-public class Square extends Rectangle{
-    Square next;
+public class Square /*extends Rectangle*/{
+    //Square next;
     String name;
     int position;
 
-    public Square(){
-
-    }
-
-    public Square(int width, int height) {
+    /*public Square(int width, int height) {
         super (width, height);
-    }
+    }*/
 
     public Square(String name, int position)
     {
@@ -23,11 +19,11 @@ public class Square extends Rectangle{
         this.position = position;
     }
 
-    protected void fillDefaults() {
+    /*protected void fillDefaults() {
         this.setFill(Color.TRANSPARENT);
         this.setStroke(Color.BLACK);
         this.setStrokeWidth(3);
-    }
+    }*/
 
     public String getName()
     {
@@ -38,13 +34,13 @@ public class Square extends Rectangle{
         return position;
     }
 
-    public Square getNext() {
+    /*public Square getNext() {
         return next;
     }
 
     public void setNext(Square next) {
         this.next = next;
-    }
+    }*/
 
     // TODO!!!! Kolla över hur newNext ska genereras.
     /*public Square recreateSquare(JSONObject toRecreate) {

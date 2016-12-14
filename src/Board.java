@@ -5,18 +5,22 @@
 public class Board {
 
     Player [] listOfPlayers;
-    List_t listOfSquares;
+    Square[] listOfSquares;
     int totalPlayer = 0;
     Deck deck_1;
     Deck deck_2;
     Deck deck_3;
     int currentPlayer = 0;
 
-    public Board(int totalPlayer) {
+    public Board(int totalPlayer, String[] names) {
         listOfPlayers = new Player[totalPlayer];
+        listOfSquares = new Square[names.length];
         this.totalPlayer = totalPlayer;
         for (int i = 0; i < listOfPlayers.length; i++) {
             listOfPlayers[i] = new Player(i, "Player " + (i + 1));
+        }
+        for (int i = 0; i < names.length; i++) {
+            listOfSquares[i] = new Square(names[i], 0);
         }
     }
 
@@ -28,12 +32,19 @@ public class Board {
 
         Square toReturn = null;
 
-        for (Square x = listOfSquares.getFirst(); x != null; x = x.getNext()) {
+        for (int i = 0; i < listOfSquares.length; i++) {
+            if(listOfSquares[i].getPosition() == currentPlayerPosition) {
+                toReturn = listOfSquares[i];
+                break;
+            }
+        }
+
+        /*for (Square x = listOfSquares.getFirst(); x != null; x = x.getNext()) {
             if (x.getPosition() == currentPlayerPosition) {
                 toReturn = x;
                 break;
             }
-        }
+        }*/
 
         return toReturn;
     }
@@ -67,11 +78,11 @@ public class Board {
         return toReturn;
     }
 
-    public List_t getListOfSquares() {
+    public Square[] getListOfSquares() {
         return listOfSquares;
     }
 
-    public void setListOfSquares(List_t listOfSquares) {
+    public void setListOfSquares(Square[] listOfSquares) {
         this.listOfSquares = listOfSquares;
     }
 

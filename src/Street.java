@@ -1,13 +1,13 @@
 /**
  * Created by axelhellman on 2016-12-09.
  */
-public class Street extends Square {
+/*public class Street extends Square {
     String streetName;
     int price;
     int buildLevel;
     Player owner;
 
-    public Street(String streetName) {
+    public Street(String streetName, int price) {
         this.streetName = streetName;
         this.price = price;
     }
@@ -29,3 +29,4 @@ public class Street extends Square {
     }
     // TODO lite allt möjligt typ sätta ägare på en gata/square etc...
 }
+*/

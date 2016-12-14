@@ -1,7 +1,7 @@
 /**
  * Created by axelhellman on 2016-12-08.
  */
-public class List_t {
+/*public class List_t {
     Square first;
     Square last;
     int length; // = 40;
@@ -84,7 +84,7 @@ public class List_t {
         Square newLast = recreateSquare((Square) toRecreate.get("last"));
 
 
-    }*/
+    }
 }
-
+*/
 

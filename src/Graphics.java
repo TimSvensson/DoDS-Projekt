@@ -19,7 +19,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
+/*
 public class Graphics extends Application {
 
 
@@ -114,10 +114,11 @@ public class Graphics extends Application {
             actiontarget.setText(userTextField.getText());
 
         });*/
-
+/*
         primaryStage.show();
 
     }
 
 
 }
+*/
