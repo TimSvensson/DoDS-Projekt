@@ -39,9 +39,20 @@ public class Monopoly {
         this.board = board;
     }
 
-/*public Monopoly recreateMonopoly(JSONObject toRecreate) {
+    /*
+    public Monopoly readGamestate() {
+        String jsonNewGamestate = in.readLine();
+        Monopoly newGamestate = gson.fromJson(jsonNewGamestate, Monopoly.class);
 
-        }*/
+        return newGamestate;
+    }
+
+    public void sendGamestate() {
+        Gson gson = new Gson();
+        String jsonGamestate = gson.toJson(game); // Skapar en jsonsträng av nuvarande gamestate
+        out.println(jsonGamestate);
+    }
+    */
 
     public static void main(String[] args) {
         //TODO Gör en while med scanner som bestämmer hur många spelare vi ska ha med i spelet.
@@ -55,24 +66,63 @@ public class Monopoly {
         Board b = game.getBoard(); // Tillgång till spelbrädet
         Dice d = game.getDice(); // Tillgång till speltärningarna
 
+        System.out.println("game.currentTurn: " + game.currentTurn);
         Square currentSquare = b.movePlayer(b.getListOfPlayers()[0], d); // Kolla, vi flyttade till och med en spelare åt dig.
         System.out.println("Spelare har flyttats!");
-
-        // TODO!!! Problem med att konvertera gamestate till JSON pga StackOverflowError. Misstänker att vi någonstans i klasshierarkin använder en cirkulär referens...
+        game.currentTurn++;
+        // Problem med att konvertera gamestate till JSON pga StackOverflowError när Square implementerar grafik
         // Relevant json-kod för att överföra gamestates nedan
+
+        /**
+         * Varje spelare kommer ha en while-loop där man tar emot det nya game-statet i en JSON-sträng och återskapar allt.
+         * När gamestatet återskapats kollar spelaren vems tur det är just nu. Är det dens tur så körs Board:s movePlayer().
+         *
+         * Utkast:
+         *
+         * // Spelare 2:s loop
+         * while(true) {
+         *    Monopoly newGamestate = readGamestate();
+         *    if (newGamestate.currentTurn == 2) {
+         *       game.board.movePlayer(game.board.getListOfPlayers()[2], game.dice);
+         *       if (getDie1() != getDie2() {
+         *          game.currentTurn++;
+         *       }
+         *       sendGamestate(game);
+         *    }
+         * }
+         */
+        System.out.println("game.currentTurn: " + game.currentTurn);
         Gson gson = new Gson();
-        String jsonPlayersList = gson.toJson(b.getListOfPlayers());
-        String jsonSquareList = gson.toJson(b.getListOfSquares());
-        System.out.println(jsonSquareList);
-
         String jsonGamestate = gson.toJson(game); // Skapar en jsonsträng av nuvarande gamestate
-        System.out.println(jsonGamestate);
-        // TODO!!! Kod för att skicka och ta emot jsonGamestate här
 
-        // Följande kod tar emot och återskapar en gamestate
+
+        // Testade att köra en loop där Player 1 och 2 tog emot nuvarande gamestate, spelade och skickade nytt gamestate till nästa spelare.
+        // Funkade som det skulle 14/12
+        /*
+        while (game.currentTurn == 1 || game.currentTurn == 2) {
+            Monopoly newGamestate = gson.fromJson(jsonGamestate, Monopoly.class);
+            System.out.println("newGamestate.currentTurn: " + newGamestate.currentTurn);
+
+            if (game.currentTurn == 1) {
+                game.board.movePlayer(game.board.getListOfPlayers()[1], game.dice);
+            }
+
+            else if (game.currentTurn == 2) {
+                game.board.movePlayer(game.board.getListOfPlayers()[2], game.dice);
+            }
+
+            game.currentTurn++;
+            jsonGamestate = gson.toJson(game); // Skapar en jsonsträng av nuvarande gamestate
+            System.out.println(jsonGamestate);
+
+            // Följande kod tar emot och återskapar en gamestate
+            // Nu har det nya Monopoly-objektet och alla dess nästlade objekt återskapats hos mottagaren!
+
+        }
+        */
+
         Monopoly newGamestate = gson.fromJson(jsonGamestate, Monopoly.class);
-        // Nu har det nya Monopoly-objektet och alla dess nästlade objekt återskapats hos mottagaren!
-
+        System.out.println("newGamestate.currentTurn: " + newGamestate.currentTurn);
 
     }
 
