@@ -38,13 +38,16 @@ public class GameLoop {
     public void run() {
         //TODO Gör en while med scanner som bestämmer hur många spelare vi ska ha med i spelet.
 
+        int port = Graphics.serverPort;
+        String serverName = Graphics.serverName;
 
-        int port = 9000;
-        String serverName = "localhost";
+        if (Graphics.IS_SERVER) {
 
-        Server server = new Server(port);
-        Thread serverThread = new Thread(server);
-        serverThread.start();
+            Server server = new Server(port);
+            Thread serverThread = new Thread(server);
+            serverThread.start();
+
+        }
 
         Pipe pipeToClient;
         Pipe pipeFromClient;

@@ -22,6 +22,13 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class Graphics extends Application {
+
+    // Tims flaggor, variabler och annat roligt
+    public static boolean IS_SERVER;
+    public static String serverName;
+    public static int serverPort;
+
+
     Tuple[] pos = new Tuple[23];
     GridPane grid = new GridPane();
 
@@ -31,6 +38,26 @@ public class Graphics extends Application {
 
 
     public static void main(String[] args) {
+
+        if (args.length == 0) {
+            IS_SERVER = true;
+            serverName = "localhost";
+            serverPort = 9000;
+        } else if (args.length == 3) {
+
+            if (args[0].equals("server")) {
+                IS_SERVER = true;
+            } else {
+                IS_SERVER = false;
+            }
+
+            serverName = args[1];
+            serverPort = Integer.parseInt(args[2]);
+
+        } else {
+            System.out.println("Usage: <IS_SERVER> <serverName> <serverPort>");
+        }
+
         //Monopoly.main(args);
         launch(args);
     }
