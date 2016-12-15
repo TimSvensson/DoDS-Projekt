@@ -55,6 +55,7 @@ public class Monopoly {
     }
     */
     public static void main(String[] args) {
+
         //TODO Gör en while med scanner som bestämmer hur många spelare vi ska ha med i spelet.
         int numberOfPlayers = 10; // Ändra den till vad du vill Adam
         String[] names = {"a", "b", "c", "d", "e"}; // Namn till rutorna

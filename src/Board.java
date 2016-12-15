@@ -25,6 +25,7 @@ public class Board {
     }
 
     public Square movePlayer(Player player, Dice dice){
+        player.prevPosition = player.getPosition();
         player.incrementPosition(player.tossDie(dice));
         // Om spelare hamnar i fängelset, så fixar vi kod till det sen
 
@@ -32,9 +33,9 @@ public class Board {
 
         Square toReturn = null;
 
-        for (int i = 0; i < listOfSquares.length; i++) {
-            if(listOfSquares[i].getPosition() == currentPlayerPosition) {
-                toReturn = listOfSquares[i];
+        for (Square listOfSquare : listOfSquares) {
+            if (listOfSquare.getPosition() == currentPlayerPosition) {
+                toReturn = listOfSquare;
                 break;
             }
         }

@@ -2,9 +2,10 @@
  * Created by axelhellman on 2016-12-08.
  */
 public class Player {
-    int id;
-    int position = 0;
-    int totalwalk = 0;
+    protected int id;
+    protected int prevPosition = 0;
+    protected int position = 0;
+    protected int totalwalk = 0;
     String name;
     //String ip; Kanske ska länka detta i monopolet istället så att id:et länkar till en spelares IP
     Money money = new Money(5000); //haha u poor bitch?
@@ -26,7 +27,7 @@ public class Player {
     }*/
 
     public int getPosition(){
-        return position;
+        return this.position;
     }
 
     public void setPosition(int position){
