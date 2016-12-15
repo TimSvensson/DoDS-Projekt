@@ -80,22 +80,16 @@ public class Graphics extends Application {
 */
         Button btnDice = new Button("Throw dice");
         btnDice.setPrefSize(100, 20);
-        Text field2 = new Text();
+
        // hbox.getChildren().addAll(btnDice, field2);
 
         return btnDice;
     }
 
-    private HBox addTextField(){
+    private Text addTextField(){
 
-        HBox hbox = new HBox();
-        hbox.setPadding(new Insets(15, 12, 15, 12));
-        hbox.setSpacing(10);
-
-        TextField field = new TextField();
-
-        hbox.getChildren().addAll(field);
-        return hbox;
+        Text field = new Text();
+        return field;
     }
 
     @Override
@@ -112,31 +106,13 @@ public class Graphics extends Application {
         border.setTop(addHBox());
         border.setBottom(addTextField());
 
+        Text actiontarget = (Text) border.getChildren().get(2);
+
         Button nodeOut = (Button) border.getChildren().get(1);
+        
         nodeOut.setOnAction(e -> {
-            kuksugare.prevPosition = kuksugare.position;
-            kuksugare.incrementPosition(kuksugare.tossDie(new Dice()));
-            drawPlayer(kuksugare, pos);
             actiontarget.setText("Moved player");
-
         });
-
-
-
-
-
-
-
-
-
-       /*
-        btn.setOnAction(e -> {
-
-            kuksugare.prevPosition = kuksugare.position;
-            kuksugare.incrementPosition(kuksugare.tossDie(new Dice()));
-            drawPlayer(kuksugare, pos);
-            actiontarget.setText("Moved player");
-        });*/
 
         Scene scene = new Scene(border, 800, 800);
         primaryStage.setScene(scene);
