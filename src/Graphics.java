@@ -1,25 +1,21 @@
-import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
 import javafx.application.Application;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
+import java.lang.reflect.Field;
 
 public class Graphics extends Application {
 
@@ -62,43 +58,85 @@ public class Graphics extends Application {
         launch(args);
     }
 
-    @Override
-    public void start(Stage primaryStage) {
-
-        primaryStage.setTitle("Monopol!");
-        primaryStage.setFullScreen(false);
-        grid = setBoard();
+    private GridPane addGrid(){
         grid.setGridLinesVisible(true);
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
         setBoard();
+        return grid;
+    }
 
-        Button btn = new Button("Sign in");
-        HBox hbBtn = new HBox(10);
-        hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
-        hbBtn.getChildren().add(btn);
-        grid.add(hbBtn, 0, 12);
 
-        final Text actiontarget = new Text();
-        grid.add(actiontarget, 1, 12);
 
-        Player kuksugare = new Player(1, "Fittan");
+    private Button addHBox() {
 
-        btn.setOnAction(new EventHandler<ActionEvent>() {
+        /*HBox hbox = new HBox();
+        hbox.setPadding(new Insets(15, 12, 15, 12));
+        hbox.setSpacing(10);   // Gap between nodes
+*/
+        Button btnDice = new Button("Throw dice");
+        btnDice.setPrefSize(100, 20);
+        Text field2 = new Text();
+       // hbox.getChildren().addAll(btnDice, field2);
 
-            @Override
-            public void handle(ActionEvent e) {
+        return btnDice;
+    }
 
-                kuksugare.prevPosition = kuksugare.position;
-                kuksugare.incrementPosition(kuksugare.tossDie(new Dice()));
-                drawPlayer(kuksugare, pos);
-                actiontarget.setText("Moved player");
-            }
+    private HBox addTextField(){
+
+        HBox hbox = new HBox();
+        hbox.setPadding(new Insets(15, 12, 15, 12));
+        hbox.setSpacing(10);
+
+        TextField field = new TextField();
+
+        hbox.getChildren().addAll(field);
+        return hbox;
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+
+        primaryStage.setTitle("Monopol!");
+        primaryStage.setFullScreen(false);
+
+        BorderPane border = new BorderPane();
+        border.setCenter(addGrid());
+
+
+
+        border.setTop(addHBox());
+        border.setBottom(addTextField());
+
+        Button nodeOut = (Button) border.getChildren().get(1);
+        nodeOut.setOnAction(e -> {
+            kuksugare.prevPosition = kuksugare.position;
+            kuksugare.incrementPosition(kuksugare.tossDie(new Dice()));
+            drawPlayer(kuksugare, pos);
+            actiontarget.setText("Moved player");
+
         });
 
-        Scene scene = new Scene(grid, 800, 800);
+
+
+
+
+
+
+
+
+       /*
+        btn.setOnAction(e -> {
+
+            kuksugare.prevPosition = kuksugare.position;
+            kuksugare.incrementPosition(kuksugare.tossDie(new Dice()));
+            drawPlayer(kuksugare, pos);
+            actiontarget.setText("Moved player");
+        });*/
+
+        Scene scene = new Scene(border, 800, 800);
         primaryStage.setScene(scene);
         primaryStage.show();
 
