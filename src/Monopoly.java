@@ -39,6 +39,7 @@ public class Monopoly {
         this.board = board;
     }
 
+
     /*
     public Monopoly readGamestate() {
         String jsonNewGamestate = in.readLine();
@@ -53,7 +54,6 @@ public class Monopoly {
         out.println(jsonGamestate);
     }
     */
-
     public static void main(String[] args) {
         //TODO Gör en while med scanner som bestämmer hur många spelare vi ska ha med i spelet.
         int numberOfPlayers = 10; // Ändra den till vad du vill Adam
@@ -98,7 +98,7 @@ public class Monopoly {
 
         // Testade att köra en loop där Player 1 och 2 tog emot nuvarande gamestate, spelade och skickade nytt gamestate till nästa spelare.
         // Funkade som det skulle 14/12
-        /*
+
         while (game.currentTurn == 1 || game.currentTurn == 2) {
             Monopoly newGamestate = gson.fromJson(jsonGamestate, Monopoly.class);
             System.out.println("newGamestate.currentTurn: " + newGamestate.currentTurn);
@@ -119,7 +119,7 @@ public class Monopoly {
             // Nu har det nya Monopoly-objektet och alla dess nästlade objekt återskapats hos mottagaren!
 
         }
-        */
+
 
         Monopoly newGamestate = gson.fromJson(jsonGamestate, Monopoly.class);
         System.out.println("newGamestate.currentTurn: " + newGamestate.currentTurn);
