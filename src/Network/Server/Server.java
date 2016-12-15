@@ -2,26 +2,16 @@ package Network.Server;
 
 /**
  * Created by timsvensson on 11/12/16.
+ *
+ * Server.java
+ *
+ * Handles all the players sockets.
  */
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
 
-public class Server {
-
-    private class ClientListObj {
-
-        ServerClientConnection serverClientConnection;
-        int port;
-
-        public ClientListObj(ServerClientConnection c, int p) {
-            this.serverClientConnection = c;
-            this.port = p;
-        }
-    }
-
-    private ArrayList<ClientListObj> cList;
+public class Server implements Runnable{
 
     private final int serverPort;
     private ServerSocket serverSocket;
@@ -34,7 +24,7 @@ public class Server {
         this.db = new Database();
     }
 
-    public void Start() {
+    public void run() {
 
         System.out.println("Attempting to create server socket with port " + this.serverPort);
         while (true) {
