@@ -122,7 +122,7 @@ public class Monopoly {
 
         }*/
 
-        while(true) {
+        /*while(true) {
             Monopoly newGamestate = readGamestate();
             if (newGamestate.currentTurn == 2) {
                 game.board.movePlayer(game.board.getListOfPlayers()[2], game.dice);
@@ -135,7 +135,7 @@ public class Monopoly {
 
         Monopoly newGamestate = gson.fromJson(jsonGamestate, Monopoly.class);
         System.out.println("newGamestate.currentTurn: " + newGamestate.currentTurn);
-
+*/
     }
 
 }

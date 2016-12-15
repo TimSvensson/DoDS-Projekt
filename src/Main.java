@@ -5,16 +5,15 @@ public class Main {
     public static void main(String[] args) {
         // Skapa nytt graphics objekt och tryck upp på skärmen
         // Fyll det med data och knappar
+        Graphics window = new Graphics();
+        Graphics.main(args);
 
-        boolean isServer;
+        window.drawPlayer(window.grid);
+        /*GameLoop g = new GameLoop();
+        new Thread(g).start();*/
+    }
 
-        if ("server".equals(args[0].toLowerCase())) {
-            isServer = true;
-        }
-        else {
-            isServer = false;
-        }
-        GameLoop game = new GameLoop();
-        game.run(isServer);
+    protected void run() {
+
     }
 }

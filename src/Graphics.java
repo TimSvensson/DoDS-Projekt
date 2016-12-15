@@ -23,8 +23,11 @@ import javafx.stage.Stage;
 
 public class Graphics extends Application {
     Tuple[] pos = new Tuple[23];
+    GridPane grid = new GridPane();
 
+    public Graphics() {
 
+    }
 
 
     public static void main(String[] args) {
@@ -37,7 +40,7 @@ public class Graphics extends Application {
 
         primaryStage.setTitle("Monopol!");
         primaryStage.setFullScreen(false);
-        GridPane grid = new GridPane();
+
         grid.setGridLinesVisible(true);
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
@@ -48,7 +51,6 @@ public class Graphics extends Application {
         Scene scene = new Scene(grid, 800, 800);
         primaryStage.setScene(scene);
         primaryStage.show();
-
 
         Player kuksugare = new Player(1, "Fittan");
         kuksugare.position = 5;
