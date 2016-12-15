@@ -35,7 +35,6 @@ public class Graphics extends Application {
     @Override
     public void start(Stage primaryStage) {
 
-        Rectangle[] r = new Rectangle[44];
         primaryStage.setTitle("Monopol!");
         primaryStage.setFullScreen(false);
         GridPane grid = new GridPane();
@@ -44,15 +43,13 @@ public class Graphics extends Application {
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
-        setBoard(grid, r);
+        setBoard(grid);
 
         Scene scene = new Scene(grid, 800, 800);
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        int numberOfPlayers = 1; // Ändra den till vad du vill Adam
-        String[] names = {"a"}; // Namn till rutorna
-        Monopoly game = new Monopoly(numberOfPlayers, names); // Nytt spel skapas
+
         Player kuksugare = new Player(1, "Fittan");
         kuksugare.position = 5;
         kuksugare.prevPosition = 0;
@@ -65,43 +62,17 @@ public class Graphics extends Application {
         r.setStrokeWidth(3);
     }
 
-    protected void fillRed(Rectangle r) {
-        r.setFill(Color.TRANSPARENT);
-        r.setStroke(Color.RED);
-        r.setStrokeWidth(3);
-    }
 
-    protected void fillBlue(Rectangle r) {
-        r.setFill(Color.TRANSPARENT);
-        r.setStroke(Color.BLUE);
-        r.setStrokeWidth(3);
-    }
 
-    protected void fillYellow(Rectangle r) {
-        r.setFill(Color.TRANSPARENT);
-        r.setStroke(Color.YELLOW);
-        r.setStrokeWidth(3);
-    }
-
-    protected void fillGreen(Rectangle r) {
-        r.setFill(Color.TRANSPARENT);
-        r.setStroke(Color.GREEN);
-        r.setStrokeWidth(3);
-    }
-
-    protected void setBoard(GridPane g, Rectangle[] rectArray) {
+    protected void setBoard(GridPane g) {
         double rectWidth = 35;
         double rectHeight = 35;
-        double widthHalf = rectWidth / 2;
-        double heightHalf = rectHeight / 2;
         int squareID = 0;
-        int j = 11;
         for (int i = 11; i >= 0; i--) {
             Rectangle r = new Rectangle(rectWidth, rectHeight);
             fillDefaults(r);
             r.setId(Integer.toString(squareID));
             g.add(r, i, 11);
-            rectArray[squareID] = r;
             squareID++;
         }
 
@@ -110,7 +81,6 @@ public class Graphics extends Application {
             fillDefaults(r);
             r.setId(Integer.toString(squareID));
             g.add(r, 0, i);
-            rectArray[squareID] = r;
             squareID++;
         }
 
