@@ -31,7 +31,7 @@ public class Graphics extends Application {
 
 
     public static void main(String[] args) {
-        Monopoly.main(args);
+        //Monopoly.main(args);
         launch(args);
     }
 
@@ -40,22 +40,44 @@ public class Graphics extends Application {
 
         primaryStage.setTitle("Monopol!");
         primaryStage.setFullScreen(false);
-
+        grid = setBoard();
         grid.setGridLinesVisible(true);
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
-        setBoard(grid);
+        setBoard();
+
+        Button btn = new Button("Sign in");
+        HBox hbBtn = new HBox(10);
+        hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
+        hbBtn.getChildren().add(btn);
+        grid.add(hbBtn, 0, 12);
+
+        final Text actiontarget = new Text();
+        grid.add(actiontarget, 1, 12);
+
+        Player kuksugare = new Player(1, "Fittan");
+
+        btn.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent e) {
+
+                kuksugare.prevPosition = kuksugare.position;
+                kuksugare.incrementPosition(kuksugare.tossDie(new Dice()));
+                drawPlayer(kuksugare, pos);
+                actiontarget.setText("Moved player");
+            }
+        });
 
         Scene scene = new Scene(grid, 800, 800);
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        Player kuksugare = new Player(1, "Fittan");
-        kuksugare.position = 5;
-        kuksugare.prevPosition = 0;
-        drawPlayer(kuksugare, grid, pos);
+
+
+
 
     }
     protected void fillDefaults(Rectangle r) {
@@ -66,7 +88,7 @@ public class Graphics extends Application {
 
 
 
-    protected void setBoard(GridPane g) {
+    protected GridPane setBoard() {
         double rectWidth = 35;
         double rectHeight = 35;
         int squareID = 0;
@@ -74,7 +96,7 @@ public class Graphics extends Application {
             Rectangle r = new Rectangle(rectWidth, rectHeight);
             fillDefaults(r);
             r.setId(Integer.toString(squareID));
-            g.add(r, i, 11);
+            grid.add(r, i, 11);
             squareID++;
         }
 
@@ -82,7 +104,7 @@ public class Graphics extends Application {
             Rectangle r = new Rectangle(rectWidth, rectHeight);
             fillDefaults(r);
             r.setId(Integer.toString(squareID));
-            g.add(r, 0, i);
+            grid.add(r, 0, i);
             squareID++;
         }
 
@@ -95,10 +117,11 @@ public class Graphics extends Application {
             if (ack >= 11) rowIndex--;
             ack++;
          }
-
+    return grid;
     }
 
-    protected void drawPlayer(Player p, GridPane grid, Tuple[] pos) {
+    protected void drawPlayer(Player p, Tuple[] pos) {
+        p.prevPosition = p.position;
         for (int i = 0; i < 23; i++) {
             if (p.position == pos[i].Position) {
                 Circle c = new Circle(15);

@@ -24,6 +24,7 @@ public class Board {
         }
     }
 
+
     public Square movePlayer(Player player, Dice dice){
         player.prevPosition = player.getPosition();
         player.incrementPosition(player.tossDie(dice));
