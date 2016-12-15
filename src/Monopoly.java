@@ -91,6 +91,7 @@ public class Monopoly {
          *    }
          * }
          */
+
         System.out.println("game.currentTurn: " + game.currentTurn);
         Gson gson = new Gson();
         String jsonGamestate = gson.toJson(game); // Skapar en jsonsträng av nuvarande gamestate
@@ -99,7 +100,7 @@ public class Monopoly {
         // Testade att köra en loop där Player 1 och 2 tog emot nuvarande gamestate, spelade och skickade nytt gamestate till nästa spelare.
         // Funkade som det skulle 14/12
 
-        while (game.currentTurn == 1 || game.currentTurn == 2) {
+        /*while (game.currentTurn == 1 || game.currentTurn == 2) {
             Monopoly newGamestate = gson.fromJson(jsonGamestate, Monopoly.class);
             System.out.println("newGamestate.currentTurn: " + newGamestate.currentTurn);
 
@@ -118,8 +119,18 @@ public class Monopoly {
             // Följande kod tar emot och återskapar en gamestate
             // Nu har det nya Monopoly-objektet och alla dess nästlade objekt återskapats hos mottagaren!
 
-        }
+        }*/
 
+        while(true) {
+            Monopoly newGamestate = readGamestate();
+            if (newGamestate.currentTurn == 2) {
+                game.board.movePlayer(game.board.getListOfPlayers()[2], game.dice);
+                if (getDie1() != getDie2() {
+                    game.currentTurn++;
+                }
+                sendGamestate(game);
+            }
+        }
 
         Monopoly newGamestate = gson.fromJson(jsonGamestate, Monopoly.class);
         System.out.println("newGamestate.currentTurn: " + newGamestate.currentTurn);
