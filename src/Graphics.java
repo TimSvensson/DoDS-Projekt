@@ -55,11 +55,13 @@ public class Graphics extends Application {
             serverPort = Integer.parseInt(args[2]);
 
         } else {
-            System.out.println("Usage: <IS_SERVER> <serverName> <serverPort>");
+            System.out.println("Usage: $ java Graphics <IS_SERVER> <serverName> <serverPort>");
         }
 
         //Monopoly.main(args);
         launch(args);
+
+        System.exit(0);
     }
 
     @Override
