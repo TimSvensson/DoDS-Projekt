@@ -104,10 +104,8 @@ public class ServerClientConnection implements Runnable {
         int currentIndex = 0;
         while(true) {
             if ( currentIndex < this.db.Size() ) {
-                for (int i = currentIndex; i < db.Size(); i++) {
-                    this.clientOut.println(db.getLogAt(i));
-                    currentIndex++;
-                }
+                this.clientOut.println(db.getLogAt(db.Size() - 1));
+                currentIndex = db.Size() - 1;
             }
         }
     }

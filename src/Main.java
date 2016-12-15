@@ -8,7 +8,9 @@ public class Main {
         Graphics window = new Graphics();
         Graphics.main(args);
 
-        window.drawPlayer(window.grid);
+        Player p;
+
+        //window.drawPlayer(p, window.grid, );
         /*GameLoop g = new GameLoop();
         new Thread(g).start();*/
     }
@@ -17,3 +19,4 @@ public class Main {
 
     }
 }
+
