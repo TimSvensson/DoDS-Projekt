@@ -2,10 +2,10 @@ import Network.Client.Client;
 import Network.Server.Server;
 import com.google.gson.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.Buffer;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * Created by axelhellman on 2016-12-08.
@@ -17,14 +17,20 @@ import java.util.Arrays;
 public class GameLoop {
     Gson gson = new Gson();
 
-    public Monopoly readGamestate(BufferedReader in) throws IOException {
+    public Monopoly readGamestate(PipedInputStream pipedInputStream) throws IOException {
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(pipedInputStream));
+
         String jsonNewGamestate = in.readLine();
         Monopoly newGamestate = gson.fromJson(jsonNewGamestate, Monopoly.class);
 
         return newGamestate;
     }
 
-    public void sendGamestate(Monopoly game, PrintWriter out) {
+    public void sendGamestate(Monopoly game, PipedOutputStream pipedOutputStream) {
+
+        PrintWriter out = new PrintWriter(new OutputStreamWriter(pipedOutputStream));
+
         String jsonGamestate = gson.toJson(game); // Skapar en jsonsträng av nuvarande gamestate
         out.println(jsonGamestate);
     }
@@ -36,37 +42,70 @@ public class GameLoop {
         int port = 9000;
         String serverName = "localhost";
 
-        /*PrintWriter serverOut = new PrintWriter()
-        BufferedReader serverIn = new BufferedReader()*/
         Server server = new Server(port);
         Thread serverThread = new Thread(server);
         serverThread.start();
 
-        /*PrintWriter clientOut = new PrintWriter()
-        BufferedReader clientIn = new BufferedReader()*/
-        Client client = new Client();
-        Thread clientThread = new Thread(server);
-        clientThread.start();
+        Pipe pipeToClient;
+        Pipe pipeFromClient;
+
+        try {
+            pipeToClient = new Pipe();
+            pipeFromClient = new Pipe();
+
+            Thread clientThread =
+                    new Thread(
+                            new Client(
+                                    pipeToClient.getPipedInputStream(),
+                                    pipeFromClient.getPipedOutputStream(),
+                                    serverName,
+                                    port));
+            clientThread.start();
 
 
+            int numberOfPlayers = 10; // Ändra den till vad du vill Adam
+            String[] names = {"a", "b", "c", "d", "e"}; // Namn till rutorna
+            Monopoly game = new Monopoly(numberOfPlayers, names); // Nytt spel skapas
 
-        int numberOfPlayers = 10; // Ändra den till vad du vill Adam
-        String[] names = {"a", "b", "c", "d", "e"}; // Namn till rutorna
-        Monopoly game = new Monopoly(numberOfPlayers, names); // Nytt spel skapas
+            System.out.println("Game created");
 
-        System.out.println("Game created");
+            while(true) {
+                Monopoly newGamestate = readGamestate(pipeFromClient.getPipedInputStream());
 
-        while(true) {
-            Monopoly newGamestate = readGamestate();
-            if (newGamestate.currentTurn == 2) {
-                game.board.movePlayer(game.board.getListOfPlayers()[2], game.dice);
-                if (game.getDice().getDie1() != game.getDice().getDie2()) {
-                    game.currentTurn++;
+                if (newGamestate.currentTurn == 2) {
+                    game.board.movePlayer(game.board.getListOfPlayers()[2], game.dice);
+                    if (game.getDice().getDie1() != game.getDice().getDie2()) {
+                        game.currentTurn++;
+                    }
+                    sendGamestate(game, pipeToClient.getPipedOutputStream());
                 }
-                sendGamestate(game);
             }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
 
 
+class Pipe {
+
+    private final PipedInputStream pipedInputStream;
+    private final PipedOutputStream pipedOutputStream;
+
+    Pipe() throws IOException {
+
+        pipedInputStream = new PipedInputStream();
+        pipedOutputStream = new PipedOutputStream();
+
+        pipedInputStream.connect(pipedOutputStream);
+    }
+
+    public PipedInputStream getPipedInputStream() {
+        return pipedInputStream;
+    }
+
+    public PipedOutputStream getPipedOutputStream() {
+        return pipedOutputStream;
+    }
+}

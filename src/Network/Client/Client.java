@@ -5,7 +5,7 @@ import java.net.*;
 /**
  * Created by Tim on 2016-12-12.
  */
-public class Client {
+public class Client implements Runnable{
 
     private final BufferedReader userInput;
     private final PrintWriter userOutput;
@@ -62,16 +62,17 @@ public class Client {
         this.userOutput = new PrintWriter(System.out);
     }
 
-    public Client(BufferedReader br, PrintWriter pw, String sn, int p) {
+    public Client(PipedInputStream userInput, PipedOutputStream userOutput, String serverName, int serverPort) {
 
-        this.serverName = sn;
-        this.serverPort = p;
+        this.serverName = serverName;
+        this.serverPort = serverPort;
 
-        this.userInput = br;
-        this.userOutput = pw;
+        this.userInput = new BufferedReader(new InputStreamReader(userInput));
+        this.userOutput = new PrintWriter(new OutputStreamWriter(userOutput));
     }
 
-    public void Init() {
+    @Override
+    public void run() {
         try {
 
 
