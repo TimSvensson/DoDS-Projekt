@@ -25,7 +25,7 @@ public class Board {
     }
 
     public Square movePlayer(Player player, Dice dice){
-        player.setPosition(player.tossDie(dice));
+        player.incrementPosition(player.tossDie(dice));
         // Om spelare hamnar i fängelset, så fixar vi kod till det sen
 
         int currentPlayerPosition = player.getPosition();
