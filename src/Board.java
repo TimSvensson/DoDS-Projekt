@@ -3,7 +3,7 @@
  * Created by axelhellman on 2016-12-08.
  */
 public class Board {
-
+    Dice dice = new Dice();
     Player [] listOfPlayers;
     Square[] listOfSquares;
     int totalPlayer = 0;
@@ -25,7 +25,7 @@ public class Board {
     }
 
 
-    public Square movePlayer(Player player, Dice dice){
+    public Square movePlayer(Player player){
         player.prevPosition = player.getPosition();
         player.incrementPosition(player.tossDie(dice));
         // Om spelare hamnar i fängelset, så fixar vi kod till det sen
@@ -63,6 +63,10 @@ public class Board {
         if(currentPlayer++ == listOfPlayers.length){
             currentPlayer = 0;
         }
+    }
+
+    public Dice getDice() {
+        return dice;
     }
 
     public int getTotalPlayer() {

@@ -17,17 +17,21 @@ import java.util.stream.Stream;
 public class GameLoop {
     Gson gson = new Gson();
 
-    public Monopoly readGamestate(PipedInputStream pipedInputStream) throws IOException {
+    public GameLoop() {
+
+    }
+
+    public Board readGamestate(PipedInputStream pipedInputStream) throws IOException {
 
         BufferedReader in = new BufferedReader(new InputStreamReader(pipedInputStream));
 
         String jsonNewGamestate = in.readLine();
-        Monopoly newGamestate = gson.fromJson(jsonNewGamestate, Monopoly.class);
+        Board newGamestate = gson.fromJson(jsonNewGamestate, Board.class);
 
         return newGamestate;
     }
 
-    public void sendGamestate(Monopoly game, PipedOutputStream pipedOutputStream) {
+    public void sendGamestate(Board game, PipedOutputStream pipedOutputStream) {
 
         PrintWriter out = new PrintWriter(new OutputStreamWriter(pipedOutputStream));
 
@@ -65,28 +69,28 @@ public class GameLoop {
                                     port));
             clientThread.start();
 
-
-            int numberOfPlayers = 10; // Ändra den till vad du vill Adam
-            String[] names = {"a", "b", "c", "d", "e"}; // Namn till rutorna
-            Monopoly game = new Monopoly(numberOfPlayers, names); // Nytt spel skapas
-
-            System.out.println("Game created");
-
-            while(true) {
-                Monopoly newGamestate = readGamestate(pipeFromClient.getPipedInputStream());
-
-                if (newGamestate.currentTurn == 2) {
-                    game.board.movePlayer(game.board.getListOfPlayers()[2], game.dice);
-                    if (game.getDice().getDie1() != game.getDice().getDie2()) {
-                        game.currentTurn++;
-                    }
-                    sendGamestate(game, pipeToClient.getPipedOutputStream());
-                }
-            }
+            loop(pipeFromClient, pipeToClient);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    void loop(Pipe pipeFromClient, Pipe pipeToClient) throws IOException {
+
+        while(true) {
+
+            Board newGamestate = readGamestate(pipeFromClient.getPipedInputStream());
+
+                if (newGamestate.currentPlayer == 2) {
+                    newGamestate.movePlayer(newGamestate.getListOfPlayers()[2]);
+                    if (newGamestate.getDice().getDie1() != newGamestate.getDice().getDie2()) {
+                        newGamestate.currentPlayer++;
+                    }
+                    sendGamestate(newGamestate, pipeToClient.getPipedOutputStream());
+                }
+           }
+
     }
 }
 
@@ -112,3 +116,4 @@ class Pipe {
         return pipedOutputStream;
     }
 }
+
