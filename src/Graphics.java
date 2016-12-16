@@ -109,17 +109,18 @@ public class Graphics extends Application {
         Text actiontarget = (Text) border.getChildren().get(2);
 
         Button nodeOut = (Button) border.getChildren().get(1);
-        
+
         nodeOut.setOnAction(e -> {
             actiontarget.setText("Moved player");
+            Player p = new Player(1, "a");
+            p.prevPosition = 0;
+            p.position = 5;
+            drawPlayer(p, pos);
         });
 
         Scene scene = new Scene(border, 800, 800);
         primaryStage.setScene(scene);
         primaryStage.show();
-
-
-
 
 
     }
@@ -165,9 +166,11 @@ public class Graphics extends Application {
 
     protected void drawPlayer(Player p, Tuple[] pos) {
         p.prevPosition = p.position;
+
         for (int i = 0; i < 23; i++) {
             if (p.position == pos[i].Position) {
                 Circle c = new Circle(15);
+                Node a = grid.getChildren().get(p.prevPosition);
                 grid.add(c, pos[i].first, pos[i].second);
             }
         }
