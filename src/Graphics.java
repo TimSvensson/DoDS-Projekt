@@ -114,7 +114,8 @@ public class Graphics extends Application {
             actiontarget.setText("Moved player");
             Player p = new Player(1, "a");
             p.prevPosition = 0;
-            p.position = 5;
+
+            p.position = p.tossDie(new Dice());
             drawPlayer(p, pos);
         });
 
