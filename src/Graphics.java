@@ -61,7 +61,7 @@ public class Graphics extends Application {
     }
 
     private GridPane addGrid(){
-        grid.setGridLinesVisible(true);
+        grid.setGridLinesVisible(false);
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
         grid.setVgap(10);
