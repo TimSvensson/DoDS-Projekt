@@ -24,38 +24,39 @@ import java.util.Collections;
  */
 public class Logger {
 
-    //<editor-fold desc="FieldVariables">
-    private static boolean fsFirstEntry = true;
-    private static String fsLogFormat = "%-25s%s";
-    private static PrintWriter fsWriter = new PrintWriter(System.out);
-    //</editor-fold>
+//<editor-fold desc="FieldVariables">
+private static boolean fsFirstEntry = true;
+private static String fsLogFormat = "%-15s%-25s%s";
+private static PrintWriter fsWriter = new PrintWriter(System.out);
+//</editor-fold>
 
-    //<editor-fold desc="Constructors">
-    public Logger() {
+//<editor-fold desc="Constructors">
+public Logger() {
 
-    }
-    //</editor-fold>
+}
+//</editor-fold>
 
-    //<editor-fold desc="GettersAndSetters">
+//<editor-fold desc="GettersAndSetters">
 
-    //</editor-fold>
+//</editor-fold>
 
-    //<editor-fold desc="PublicMethods">
-    public static void log(String pMessage) {
-        if (fsFirstEntry) {
-            fsFirstEntry = false;
-            fsWriter.println(String.format(fsLogFormat, "THREAD", "MESSAGE"));
+//<editor-fold desc="PublicMethods">
+public static void log(String pMessage) {
+	if (fsFirstEntry) {
+		fsFirstEntry = false;
+		fsWriter.println(String.format(fsLogFormat, "CRNT SYS TIME", "THREAD", "MESSAGE"));
+		
+		// create a string made up of n copies of s
+		fsWriter.println(String.join("", Collections.nCopies(80, "-")));
+	}
+	fsWriter.println(String.format(fsLogFormat, System.currentTimeMillis(), Thread.currentThread().getName(),
+								   pMessage));
+	fsWriter.flush();
+}
+//</editor-fold>
 
-            // create a string made up of n copies of s
-            fsWriter.println(String.join("", Collections.nCopies(50, "-")));
-        }
-        fsWriter.println(String.format(fsLogFormat, Thread.currentThread().getName(), pMessage));
-        fsWriter.flush();
-    }
-    //</editor-fold>
+//<editor-fold desc="PrivateMethods">
 
-    //<editor-fold desc="PrivateMethods">
-
-    //</editor-fold>
+//</editor-fold>
 
 }

@@ -10,11 +10,13 @@
 package DistributedSystem.Client;
 
 import DistributedSystem.Logger;
-import sun.rmi.runtime.Log;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Class summary.
@@ -28,82 +30,130 @@ import java.net.UnknownHostException;
  */
 public class Client implements Runnable {
 
-    //<editor-fold desc="FieldVariables">
-    private String fHostName;
-    private int fPortNumber;
+//<editor-fold desc="FieldVariables">
+private String fHostName;
+private int fPortNumber;
 
-    private Socket fHost;
+private Socket fSocket;
 
-    private BufferedReader fReader;
-    private PrintWriter fWriter;
-    //</editor-fold>
+private BufferedReader fReader;
+private PrintWriter fWriter;
 
-    //<editor-fold desc="Constructors">
-    public Client(String pHostName, int pPortNumber) {
-        fHostName = pHostName;
-        fPortNumber = pPortNumber;
-    }
+private LinkedBlockingQueue<String> fQueue = new LinkedBlockingQueue<>();
+//</editor-fold>
 
-    //</editor-fold>
+//<editor-fold desc="Constructors">
+public Client(String pHostName, int pPortNumber) {
+		fHostName = pHostName;
+		fPortNumber = pPortNumber;
+}
 
-    //<editor-fold desc="GettersAndSetters">
+//</editor-fold>
 
-    //</editor-fold>
+//<editor-fold desc="GettersAndSetters">
 
-    //<editor-fold desc="PublicMethods">
+//</editor-fold>
 
-    @Override
-    public void run() {
-        connect();
-        listen();
-    }
+//<editor-fold desc="PublicMethods">
 
-    public void connect() {
-        try {
-            Logger.log("Connecting to " + fHostName + " " + fPortNumber);
-            fHost = new Socket(fHostName, fPortNumber);
+@Override
+public void run() {
+		Logger.log("Starts Running.");
+		if (fSocket == null || fSocket.isClosed()) {
+				connect();
+		}
+		listen();
+		Logger.log("Stops Running.");
+}
 
-            Logger.log("Opening streams");
-            fReader = new BufferedReader(new InputStreamReader(fHost.getInputStream()));
-            fWriter = new PrintWriter(fHost.getOutputStream());
+public void setup() {
+		Thread t = new Thread(this);
+		t.setDaemon(true);
+		t.start();
+		
+		try {
+				Thread.sleep(100);
+		} catch (InterruptedException pE) {
+				pE.printStackTrace();
+		}
+}
 
-            Logger.log("Client connected and streams are open");
-        } catch (UnknownHostException pE) {
-            pE.printStackTrace();
-        } catch (IOException pE) {
-            pE.printStackTrace();
-        }
-    }
+public void connect() {
+		Logger.log("Connecting to " + fHostName + " " + fPortNumber);
+		try {
+				fSocket = new Socket(fHostName, fPortNumber);
+				Logger.log("Opening streams");
+				fReader = new BufferedReader(new InputStreamReader(fSocket.getInputStream()));
+				fWriter = new PrintWriter(fSocket.getOutputStream());
+		} catch (IOException pE) {
+				pE.printStackTrace();
+		}
+		
+		Logger.log("Client connected and streams are open");
+}
 
-    public void reconnect(String pHostName, int pPortNumber) throws IOException {
-        disconnect();
-        fHostName = pHostName;
-        fPortNumber = pPortNumber;
-        connect();
-    }
+public void reconnect(String pHostName, int pPortNumber) throws IOException {
+		disconnect();
+		fHostName = pHostName;
+		fPortNumber = pPortNumber;
+		connect();
+}
 
-    public void disconnect() throws IOException {
-        Logger.log("Disconnecting.");
-        fReader.close();
-        fWriter.close();
-        fHost.close();
-    }
+public void disconnect() throws IOException {
+		fWriter.close();
+		fReader.close();
+		fSocket.close();
+		Logger.log("Socket closed.");
+}
 
-    public void write(String pMessage) {
-        Logger.log("Sending \"" + pMessage + "\".");
-        fWriter.println(pMessage);
-        fWriter.flush();
-    }
+public void write(String pMessage) {
+		Logger.log("Sending \"" + pMessage + "\".");
+		fWriter.println(pMessage);
+		fWriter.flush();
+}
 
-    public String read() throws IOException {
-        return fReader.readLine();
-    }
-    //</editor-fold>
+public String read() {
+		while (!hasMessage()) {}
+		return fQueue.poll();
+}
 
-    //<editor-fold desc="PrivateMethods">
-    private void listen() {
+public boolean hasMessage() {
+		return !fQueue.isEmpty();
+}
 
-    }
-    //</editor-fold>
+public boolean isClosed() {
+		return fSocket.isClosed();
+}
+
+@Override
+public String toString() {
+		// TODO Add more relevant information like:
+		// Size of MessageQueue
+		// List of backup Servers
+		return fSocket.toString();
+}
+//</editor-fold>
+
+//<editor-fold desc="PrivateMethods">
+private void listen() {
+		Logger.log("Starting listening.");
+		String s = null;
+		try {
+				while ((s = fReader.readLine()) != null) {
+						switch (s) {
+								case "##server_terminating":
+										Logger.log("\"##server_terminating\" received.");
+										disconnect();
+								default:
+										fQueue.offer(s);
+										break;
+						}
+				}
+		} catch (IOException pE) {
+				Logger.log("IOException!");
+		}
+		Logger.log("Stopping listening.");
+}
+//</editor-fold>
 
 }
