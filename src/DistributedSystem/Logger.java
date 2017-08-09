@@ -49,8 +49,8 @@ public static void log(String pMessage) {
 		// create a string made up of n copies of s
 		fsWriter.println(String.join("", Collections.nCopies(80, "-")));
 	}
-	fsWriter.println(String.format(fsLogFormat, System.currentTimeMillis(), Thread.currentThread().getName(),
-								   pMessage));
+	fsWriter.println(String.format(fsLogFormat, System.currentTimeMillis(),
+								   Thread.currentThread().getName(), pMessage));
 	fsWriter.flush();
 }
 //</editor-fold>

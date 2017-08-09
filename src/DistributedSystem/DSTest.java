@@ -10,6 +10,7 @@
 package DistributedSystem;
 
 import DistributedSystem.Client.Client;
+import DistributedSystem.Server.BackupServer;
 import DistributedSystem.Server.Server;
 
 import java.io.IOException;
@@ -47,7 +48,7 @@ public void runTests() {
 		String bannerStr = String.join("", Collections.nCopies(20, "="));
 		
 		try {
-				int wait = 200;
+				int wait = 500;
 				
 				Logger.log(String.format(bannerFormat, bannerStr, "oneClientEchoTest"));
 				Logger.log(String.format(resFormat, "RESULTS:", "oneClientEchoTest",
@@ -102,29 +103,22 @@ private boolean oneClientEchoTest() {
 		server.setup();
 		c1.setup();
 		
-		Logger.log("Sending message from Client to Server.");
 		String shout1 = "shout1";
 		String shout2 = "shout2";
 		c1.write(shout1);
 		c1.write(shout2);
 		
-		Logger.log("Waiting for echo.");
 		String echo1 = c1.read();
 		if (!echo1.equals(shout1)) {
 				result = false;
 		}
-		Logger.log("echo1 received.");
 		
 		String echo2 = c1.read();
 		if (!echo2.equals(shout2)) {
 				result = false;
 		}
-		Logger.log("echo2 received.");
 		
-		Logger.log("Terminating...");
 		server.terminate();
-		
-		Logger.log("clientSendTest done.");
 		
 		return result;
 }
@@ -154,25 +148,18 @@ private boolean twoClientEchoTest() {
 		shout.write(s3);
 
 		// Check that shout received the strings in correct order
-		if (!(shout.read().equals(s1) && shout.read().equals(s2) && shout.read().equals(
-			s3))) {
+		if (!(shout.read().equals(s1) && shout.read().equals(s2) && shout.read().equals(s3))) {
+				Logger.log("Client shout read wrong.");
 				result = false;
 		}
-		Logger.log("shout read.");
 		
 		// Check that echo received the strings in correct order
 		if (!(echo.read().equals(s1) && echo.read().equals(s2) && echo.read().equals(s3)
 		)) {
+				Logger.log("Client echo read wrong.");
 				result = false;
 		}
-		Logger.log("echo read.");
 		
-		try {
-				shout.disconnect();
-				echo.disconnect();
-		} catch (IOException pE) {
-				pE.printStackTrace();
-		}
 		s.terminate();
 		
 		return result;
@@ -194,25 +181,25 @@ private boolean clientDisconnectTest() {
 		c2.setup();
 		c3.setup();
 		
-		try {
-				String s1 = "Shout one";
-				c3.write(s1);
-				
-				if (!(c1.read().equals(s1) && c2.read().equals(s1) && c3.read().equals(s1))) {
-						return false;
-				}
-				
-				c1.disconnect();
-				
-				String s2 = "Shout two";
-				c3.write(s2);
-				
-				if (!(c2.read().equals(s2) && c3.read().equals(s2))) {
-						return false;
-				}
-		} catch (IOException pE) {
-				pE.printStackTrace();
+
+		String s1 = "Shout one";
+		c3.write(s1);
+		
+		if (!(c1.read().equals(s1) && c2.read().equals(s1) && c3.read().equals(s1))) {
+				Logger.log("String s1 misread.");
+				return false;
 		}
+		
+		c1.disconnect();
+		
+		String s2 = "Shout two";
+		c3.write(s2);
+		
+		if (!(c2.read().equals(s2) && c3.read().equals(s2))) {
+				Logger.log("String s2 misread.");
+				return false;
+		}
+
 		
 		server.terminate();
 		
@@ -245,10 +232,14 @@ private boolean serverTerminationTest() {
 		
 		server.terminate();
 		
-		c1.read();
-		c2.read();
+		try {
+				Thread.sleep(400);
+		} catch (InterruptedException pE) {
+				pE.printStackTrace();
+		}
 		
 		if (!(c1.isClosed() && c2.isClosed())) {
+				Logger.log("c1 or c2 has not disconnected properly.");
 				return false;
 		}
 		
@@ -267,10 +258,50 @@ private boolean serverTerminationTest() {
 }
 
 private boolean backupServerTest() {
+		boolean result = false;
 		//TODO When a Server crashes, a Backup Server takes over.
 		//TODO Check that Clients can communicate.
+		String host = "localhost";
+		int port = 9005;
+		int bsPort1 = 9006;
+		int bsPort2 = 9007;
 		
-		return false;
+		Server ms = new Server(port);
+		BackupServer bs1 = new BackupServer(new Address(host, port), bsPort1);
+		BackupServer bs2 = new BackupServer(new Address(host, port), bsPort2);
+		
+		Client c1 = new Client(host, port);
+		Client c2 = new Client(host, port);
+		
+		ms.setup();
+		bs1.setup();
+		bs2.setup();
+		
+		c1.setup();
+		c2.setup();
+		
+		// Crashes the main server
+		ms.stop();
+		
+		// TODO Check to see if backupServer takes over
+		
+		// TODO Check if clients still can communicate
+		String test = "test";
+		c1.write(test);
+		
+		String c1Resp = c1.read();
+		String c2Resp = c2.read();
+		
+		Logger.log("c1Resp: " + c1Resp);
+		Logger.log("c2Resp: " + c2Resp);
+		
+		if (c1Resp.equals(test) && c2Resp.equals(test)) {
+				result = true;
+		}
+		
+		ms.terminate();
+		
+		return result;
 }
 //</editor-fold>
 

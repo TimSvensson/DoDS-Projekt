@@ -9,13 +9,14 @@
 
 package DistributedSystem.Client;
 
+import DistributedSystem.Address;
+import DistributedSystem.Flags;
 import DistributedSystem.Logger;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -29,25 +30,25 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @since JDK 1.8
  */
 public class Client implements Runnable {
+		
+		// TODO Make all clients create a backupServer
 
 //<editor-fold desc="FieldVariables">
-private String fHostName;
-private int fPortNumber;
+private Address fServerAddress;
 
-private Socket fSocket;
-
+private Socket fServerSocket;
 private BufferedReader fReader;
 private PrintWriter fWriter;
 
 private LinkedBlockingQueue<String> fQueue = new LinkedBlockingQueue<>();
+
+private ArrayList<Address> fBackupServers;
 //</editor-fold>
 
 //<editor-fold desc="Constructors">
 public Client(String pHostName, int pPortNumber) {
-		fHostName = pHostName;
-		fPortNumber = pPortNumber;
+		fServerAddress = new Address(pHostName, pPortNumber);
 }
-
 //</editor-fold>
 
 //<editor-fold desc="GettersAndSetters">
@@ -59,15 +60,27 @@ public Client(String pHostName, int pPortNumber) {
 @Override
 public void run() {
 		Logger.log("Starts Running.");
-		if (fSocket == null || fSocket.isClosed()) {
-				connect();
+		boolean loop = true;
+		while (loop) {
+				if (fServerSocket == null || fServerSocket.isClosed()) {
+						connect();
+				}
+				listen();
+				disconnect();
+				
+				if (fBackupServers == null || fBackupServers.isEmpty()) {
+						loop = false;
+				} else {
+						fServerAddress = fBackupServers.get(0);
+						fBackupServers.remove(0);
+				}
 		}
-		listen();
 		Logger.log("Stops Running.");
 }
 
 public void setup() {
 		Thread t = new Thread(this);
+		t.setName("Client-" + t.getId());
 		t.setDaemon(true);
 		t.start();
 		
@@ -79,30 +92,27 @@ public void setup() {
 }
 
 public void connect() {
-		Logger.log("Connecting to " + fHostName + " " + fPortNumber);
+		Logger.log("Connecting to " + fServerAddress.getAddress() + " " + fServerAddress.getPort());
 		try {
-				fSocket = new Socket(fHostName, fPortNumber);
+				fServerSocket = new Socket(fServerAddress.getAddress(), fServerAddress.getPort());
 				Logger.log("Opening streams");
-				fReader = new BufferedReader(new InputStreamReader(fSocket.getInputStream()));
-				fWriter = new PrintWriter(fSocket.getOutputStream());
+				fReader = new BufferedReader(new InputStreamReader(fServerSocket.getInputStream()));
+				fWriter = new PrintWriter(fServerSocket.getOutputStream());
+				write(Flags.client);
 		} catch (IOException pE) {
 				pE.printStackTrace();
 		}
-		
 		Logger.log("Client connected and streams are open");
 }
 
-public void reconnect(String pHostName, int pPortNumber) throws IOException {
-		disconnect();
-		fHostName = pHostName;
-		fPortNumber = pPortNumber;
-		connect();
-}
-
-public void disconnect() throws IOException {
+public void disconnect() {
 		fWriter.close();
-		fReader.close();
-		fSocket.close();
+		try {
+				fReader.close();
+				fServerSocket.close();
+		} catch (IOException pE) {
+				pE.printStackTrace();
+		}
 		Logger.log("Socket closed.");
 }
 
@@ -113,6 +123,7 @@ public void write(String pMessage) {
 }
 
 public String read() {
+		// TODO Make not blocking
 		while (!hasMessage()) {}
 		return fQueue.poll();
 }
@@ -122,38 +133,89 @@ public boolean hasMessage() {
 }
 
 public boolean isClosed() {
-		return fSocket.isClosed();
+		return fServerSocket.isClosed();
 }
 
 @Override
 public String toString() {
 		// TODO Add more relevant information like:
 		// Size of MessageQueue
-		// List of backup Servers
-		return fSocket.toString();
+		// List of server_backup Servers
+		return fServerSocket.toString();
 }
 //</editor-fold>
 
 //<editor-fold desc="PrivateMethods">
 private void listen() {
 		Logger.log("Starting listening.");
-		String s = null;
-		try {
-				while ((s = fReader.readLine()) != null) {
-						switch (s) {
-								case "##server_terminating":
-										Logger.log("\"##server_terminating\" received.");
-										disconnect();
-								default:
-										fQueue.offer(s);
-										break;
+		int unresolvedPings = 0;
+		boolean loop = true;
+		while (loop) {
+				try {
+						fWriter.println(Flags.ping);
+						fWriter.flush();
+						unresolvedPings++;
+						
+						while (fReader.ready()) {
+								String s = fReader.readLine();
+								StringTokenizer st = new StringTokenizer(s);
+								switch (st.nextToken()) {
+										case Flags.server_terminating:
+												Logger.log("\"" + Flags.server_terminating +
+														   "\" received.");
+												loop = false;
+												disconnect();
+												return;
+										case Flags.new_backup_server:
+												setBackupServers(s);
+												break;
+										case Flags.ping:
+												write(Flags.ping_response);
+												break;
+										case Flags.ping_response:
+												unresolvedPings--;
+												break;
+										case Flags.new_client:
+												Logger.log("New client connected: " + s);
+												break;
+										default:
+												fQueue.offer(s);
+												break;
+								}
 						}
+						
+						Thread.sleep(100);
+				} catch (IOException pE) {
+						Logger.log("IOException!");
+				} catch (InterruptedException pE) {
+						Logger.log("Interrupted!");
 				}
-		} catch (IOException pE) {
-				Logger.log("IOException!");
+				
+				if (unresolvedPings >= 5) {
+						Logger.log("Five or more unresolved pings.");
+						loop = false;
+				}
 		}
 		Logger.log("Stopping listening.");
 }
-//</editor-fold>
 
+private boolean setBackupServers(String pList) {
+		StringTokenizer st = new StringTokenizer(pList);
+		
+		if (!Flags.new_backup_server.equals(st.nextToken())) {
+				return false;
+		}
+		
+		fBackupServers = new ArrayList<>();
+		while (st.hasMoreTokens()) {
+				
+				String host = st.nextToken();
+				int port = Integer.parseInt(st.nextToken());
+				
+				fBackupServers.add(new Address(host, port));
+		}
+		
+		return true;
+}
+//</editor-fold>
 }

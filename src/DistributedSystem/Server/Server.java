@@ -9,6 +9,7 @@
 
 package DistributedSystem.Server;
 
+import DistributedSystem.Flags;
 import DistributedSystem.Logger;
 
 import java.io.BufferedReader;
@@ -17,9 +18,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -37,15 +37,22 @@ public class Server implements Runnable {
 //<editor-fold desc="FieldVariables">
 private boolean fTerminate = false;
 private int fPortNumber;
-private ArrayList<ClientSocket> fClients = new ArrayList<>();
-private LinkedBlockingQueue<String> fIncomingQueue = new LinkedBlockingQueue<>();
+
+private List<Connection> fClients = Collections.synchronizedList(new ArrayList<Connection>());
+private List<Connection> fBackupServers = Collections.synchronizedList(new ArrayList<Connection>());
+private LinkedBlockingQueue<String> fEchoQueue = new LinkedBlockingQueue<>();
+
 private Thread fEchoThread;
 //</editor-fold>
 
 //<editor-fold desc="Constructors">
+
+// TODO Add constructor with no port
+
 public Server(int pPortNumber) {
 		fPortNumber = pPortNumber;
 }
+
 //</editor-fold>
 
 //<editor-fold desc="PublicMethods">
@@ -64,32 +71,52 @@ public void setup() {
 @Override
 public void run() {
 		Logger.log("Starting!");
+		mainServerSetup();
+		Logger.log("Stopping!");
+}
+
+public void terminate() {
+		Logger.log("Terminating server.");
+		fTerminate = true;
+}
+
+public boolean isTerminated() {
+		return fTerminate && (fClients == null) && (fEchoThread == null);
+}
+
+// This will shut down the server incorrectly
+public void stop() {
+		int sleepTime = 4000;
+		try {
+				Thread.sleep(sleepTime);
+		} catch (InterruptedException pE) {
+				pE.printStackTrace();
+		}
+		fEchoThread.interrupt();
+		closeAllConnections();
+		closeServerEcho();
+		fClients = null;
+		fBackupServers = null;
+		fTerminate = true;
+}
+//</editor-fold>
+
+//<editor-fold desc="PrivateMethods">
+private void mainServerSetup() {
 		
-		fEchoThread = new Thread(new ServerEcho(), "SE");
+		fEchoThread = new Thread(new ServerEcho(), "ServerEcho@" + fPortNumber);
 		fEchoThread.setDaemon(true);
 		fEchoThread.start();
 		
 		try {
 				ServerSocket lSS = new ServerSocket(fPortNumber);
 				lSS.setSoTimeout(100);
-		
-				Logger.log("New ServerSocket created.");
 				
+				Logger.log("Main server ServerSocket open.");
 				while (!fTerminate) {
-						try {
-								Logger.log("Waiting for new connection.");
-								ClientSocket client = new ClientSocket(lSS.accept());
-								fClients.add(client);
-								ServerDock serverDock = new ServerDock(client);
-								
-								Thread t = new Thread(serverDock);
-								t.setDaemon(true);
-								t.start();
-								
-								Logger.log("New Client accepted.");
-						} catch (SocketTimeoutException pE) {}
+						waitForConnection(lSS);
 				}
-				offerToIncomingQueue("##server_terminating");
+				echo(Flags.server_terminating);
 				
 				try {
 						Thread.sleep(100);
@@ -109,34 +136,72 @@ public void run() {
 		} catch (IOException pE) {
 				pE.printStackTrace();
 		}
-		
-		Logger.log("Stopping!");
 }
 
-public void terminate() {
-		Logger.log("Terminating server.");
-		fTerminate = true;
+private void waitForConnection(ServerSocket pLSS) throws IOException {
+		try {
+				Logger.log("Waiting for new connection.");
+				Connection connection = new Connection(pLSS.accept());
+				
+				String connectionType = connection.read();
+				String serverDockName = "";
+				boolean newBackup = false;
+				if (connectionType.equals(Flags.client)) {
+						fClients.add(connection);
+						serverDockName = "ClientDock@" + fPortNumber + "-" + connection.getPort();
+				} else if (connectionType.equals(Flags.server_backup)) {
+						newBackup = true;
+						fBackupServers.add(connection);
+						echo(connection.toString());
+						serverDockName = "BackupDock@" + fPortNumber + "-" + connection.getPort();
+				} else {
+						// Error has occurred
+						Logger.log("Unable to identify connection.");
+						connection.close();
+						return;
+				}
+				
+				ServerDock serverDock = new ServerDock(connection);
+				Thread t = new Thread(serverDock, serverDockName);
+				t.setDaemon(true);
+				t.start();
+				
+				echo(Flags.new_client + " " + connection.getHost() + ":" + connection.getPort());
+				
+				if (newBackup) {
+						echo(getBackupList());
+				}
+		} catch (SocketTimeoutException pE) {
+		}
 }
 
-public boolean isTerminated() {
-		return fTerminate && (fClients == null) && (fEchoThread == null);
-}
-//</editor-fold>
-
-//<editor-fold desc="PrivateMethods">
-private synchronized void offerToIncomingQueue(String s) {
-		fIncomingQueue.offer(s);
+private synchronized void echo(String s) {
+		fEchoQueue.offer(s);
 }
 
 private void closeAllConnections() {
-		for (ClientSocket cs : fClients) {
-				try {
-						cs.close();
-				} catch (IOException pE) {
-						pE.printStackTrace();
+		synchronized(fClients) {
+				Iterator<Connection> iterator = fClients.iterator();
+				while (iterator.hasNext()) {
+						try {
+								iterator.next().close();
+						} catch (IOException pE) {
+								pE.printStackTrace();
+						}
 				}
 		}
 		fClients = null;
+		synchronized(fBackupServers) {
+				Iterator<Connection> iterator = fBackupServers.iterator();
+				while (iterator.hasNext()) {
+						try {
+								iterator.next().close();
+						} catch (IOException pE) {
+								pE.printStackTrace();
+						}
+				}
+		}
+		fBackupServers = null;
 }
 
 private void closeServerEcho() {
@@ -148,18 +213,31 @@ private void closeServerEcho() {
 		}
 		fEchoThread = null;
 }
+
+private String getBackupList() {
+		String backupLists = Flags.new_backup_server;
+		synchronized(fBackupServers) {
+				Iterator<Connection> iterator = fBackupServers.iterator();
+				while (iterator.hasNext()) {
+						Connection c = iterator.next();
+						backupLists += " " + c.getHost() + " " + c.getPort();
+				}
+		}
+		return backupLists;
+}
 //</editor-fold>
 
 //<editor-fold desc="GettersAndSetters">
 
 //</editor-fold>
 
-private class ClientSocket {
+//<editor-fold desc="Inner Classes">
+private class Connection {
 		private Socket fSocket;
 		private PrintWriter fWriter;
 		private BufferedReader fReader;
 		
-		public ClientSocket(Socket pSocket) throws IOException {
+		public Connection(Socket pSocket) throws IOException {
 				fSocket = pSocket;
 				fWriter = new PrintWriter(pSocket.getOutputStream());
 				fReader = new BufferedReader(new InputStreamReader(pSocket.getInputStream()));
@@ -179,13 +257,21 @@ private class ClientSocket {
 				fReader.close();
 				fSocket.close();
 		}
+		
+		public int getPort() {
+				return fSocket.getPort();
+		}
+		
+		public String getHost() {
+				return fSocket.getInetAddress().getHostName();
+		}
 }
 
 private class ServerDock implements Runnable {
 		
-		private ClientSocket fClient;
+		private Connection fClient;
 		
-		public ServerDock(ClientSocket pClient) {
+		public ServerDock(Connection pClient) {
 				fClient = pClient;
 		}
 		
@@ -198,7 +284,16 @@ private class ServerDock implements Runnable {
 						String s;
 						while ((s = fClient.read()) != null) {
 								Logger.log("Received: " + s);
-								offerToIncomingQueue(s);
+								switch (s) {
+										case Flags.ping:
+												fClient.write(Flags.ping_response);
+												break;
+										case Flags.all_backup_servers:
+												fClient.write(getBackupList());
+										default:
+												echo(s);
+								}
+								
 						}
 				} catch (IOException pE) {
 						Logger.log("IOException!");
@@ -206,6 +301,15 @@ private class ServerDock implements Runnable {
 				}
 				
 				Logger.log("Closing ServerDock.");
+		}
+		
+		public int getPort() {
+				return fClient.getPort();
+		}
+		
+		@Override
+		public String toString() {
+				return fClient.getHost() + " " + fClient.getPort();
 		}
 }
 
@@ -217,8 +321,8 @@ private class ServerEcho implements Runnable {
 				Logger.log("Starting ServerEcho.");
 				
 				try {
-						while (fIncomingQueue != null) {
-								String s = fIncomingQueue.take();
+						while (fEchoQueue != null) {
+								String s = fEchoQueue.take();
 								echo(s);
 						}
 				} catch (InterruptedException pE) {
@@ -230,9 +334,19 @@ private class ServerEcho implements Runnable {
 		
 		private void echo(String s) {
 				Logger.log("Echoing \"" + s + "\"");
-				for (ClientSocket client : fClients) {
-						client.write(s);
+				synchronized(fClients) {
+						Iterator<Connection> iterator = fClients.iterator();
+						while (iterator.hasNext()) {
+								iterator.next().write(s);
+						}
+				}
+				synchronized(fBackupServers) {
+						Iterator<Connection> iterator = fBackupServers.iterator();
+						while (iterator.hasNext()) {
+								iterator.next().write(s);
+						}
 				}
 		}
 }
+//</editor-fold>
 }
