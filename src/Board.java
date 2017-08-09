@@ -3,14 +3,25 @@
  * Created by axelhellman on 2016-12-08.
  */
 public class Board {
-    Dice dice = new Dice();
-    Player [] listOfPlayers;
-    Square[] listOfSquares;
-    int totalPlayer = 0;
-    Deck deck_1;
-    Deck deck_2;
-    Deck deck_3;
-    int currentPlayer = 0;
+    private Dice dice = new Dice();
+    private Player [] listOfPlayers;
+    private Square[] listOfSquares;
+    private int totalPlayer = 0;
+    private Deck deck_1;
+    private Deck deck_2;
+    private Deck deck_3;
+    private int currentPlayer = 0;
+    private int previousplayer = 3;
+
+    public void setCurrentPlayer(int currentPlayer) {
+        this.currentPlayer = currentPlayer;
+    }
+
+
+    public int getPreviousplayer() {
+        return previousplayer;
+    }
+
 
     public Board(int totalPlayer, String[] names) {
         listOfPlayers = new Player[totalPlayer];
@@ -24,10 +35,19 @@ public class Board {
         }
     }
 
+    public void movePlayer() {
+        movePlayer(getCurrentPlayer());
+    }
 
     public Square movePlayer(Player player){
+
         player.prevPosition = player.getPosition();
         player.incrementPosition(player.tossDie(dice));
+
+        previousplayer = currentPlayer;
+        if (currentPlayer < 3) currentPlayer++;
+        else currentPlayer = 0;
+
         // Om spelare hamnar i fängelset, så fixar vi kod till det sen
 
         int currentPlayerPosition = player.getPosition();
@@ -40,13 +60,6 @@ public class Board {
                 break;
             }
         }
-
-        /*for (Square x = listOfSquares.getFirst(); x != null; x = x.getNext()) {
-            if (x.getPosition() == currentPlayerPosition) {
-                toReturn = x;
-                break;
-            }
-        }*/
 
         return toReturn;
     }
@@ -67,6 +80,10 @@ public class Board {
 
     public Dice getDice() {
         return dice;
+    }
+
+    public boolean wasDoubleDice() {
+        return (dice.getDie1() == dice.getDie2());
     }
 
     public int getTotalPlayer() {

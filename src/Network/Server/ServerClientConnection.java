@@ -92,9 +92,6 @@ public class ServerClientConnection implements Runnable {
         this.clientOut = new PrintWriter(this.client.getOutputStream(), true);
         this.clientIn = new BufferedReader(new InputStreamReader(this.client.getInputStream()));
         this.stdIn = new BufferedReader(new InputStreamReader(System.in));
-
-        clientOut.println("Welcome to the chat!");
-        clientOut.println("You are: " + this.client.toString());
     }
 
     private void WriteToSocket() {
