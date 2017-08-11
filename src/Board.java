@@ -5,63 +5,76 @@
 public class Board {
     private Dice dice = new Dice();
     private Player [] listOfPlayers;
-    private Square[] listOfSquares;
+    String [] nameOfSquares = {
+            "Street 1", "Street 2", "Street 3", "Street 4", "Street 5", "Street 6", "Street 7", "Street 8","Street 9", "Street 10",
+            "Street 11", "Street 12", "Street 13", "Street 14", "Street 15", "Street 16", "Street 17", "Street 18","Street 19", "Street 20",
+            "Street 21", "Street 22", "Street 23", "Street 24", "Street 25", "Street 26", "Street 27", "Street 28","Street 29", "Street 30",
+            "Street 31", "Street 32", "Street 33", "Street 34", "Street 35", "Street 36", "Street 37", "Street 38","Street 39", "Street 40"};
     private int totalPlayer = 0;
     private Deck deck_1;
     private Deck deck_2;
     private Deck deck_3;
     private int currentPlayer = 0;
-    private int previousplayer = 3;
+    private int previousPlayer = -1;
+    private Square [] listOfSquares = new Square[nameOfSquares.length];
+    private Square currentSquare;
+    private Square previousSquare;
+
+    public Square getCurrentSquare() {
+        return currentSquare;
+    }
+
+    public Square getPreviousSquare() {
+        return previousSquare;
+    }
 
     public void setCurrentPlayer(int currentPlayer) {
         this.currentPlayer = currentPlayer;
     }
 
 
-    public int getPreviousplayer() {
-        return previousplayer;
+    public Player getPreviousPlayer() {
+        return listOfPlayers[previousPlayer];
     }
 
 
-    public Board(int totalPlayer, String[] names) {
+    public Board(int totalPlayer) {
         listOfPlayers = new Player[totalPlayer];
-        listOfSquares = new Square[names.length];
         this.totalPlayer = totalPlayer;
         for (int i = 0; i < listOfPlayers.length; i++) {
-            listOfPlayers[i] = new Player(i, "Player " + (i + 1));
+            Player player = new Player(i, "Player " + (i + 1));
+            listOfPlayers[i] = player;
         }
-        for (int i = 0; i < names.length; i++) {
-            listOfSquares[i] = new Square(names[i], 0);
+
+        for (int i = 0; i < nameOfSquares.length; i++) {
+            listOfSquares[i] = new Square(nameOfSquares[i], i);
         }
     }
 
-    public void movePlayer() {
-        movePlayer(getCurrentPlayer());
-    }
-
-    public Square movePlayer(Player player){
+    public void movePlayer(){
+        Player player = getCurrentPlayer();
 
         player.prevPosition = player.getPosition();
         player.incrementPosition(player.tossDie(dice));
 
-        previousplayer = currentPlayer;
-        if (currentPlayer < 3) currentPlayer++;
-        else currentPlayer = 0;
+        nextTurn();
 
         // Om spelare hamnar i fängelset, så fixar vi kod till det sen
 
         int currentPlayerPosition = player.getPosition();
 
-        Square toReturn = null;
+        updateSquares(currentPlayerPosition);
+    }
+
+    public void updateSquares(int currentPlayerPosition) {
+        previousSquare = currentSquare;
 
         for (Square listOfSquare : listOfSquares) {
             if (listOfSquare.getPosition() == currentPlayerPosition) {
-                toReturn = listOfSquare;
+                currentSquare = listOfSquare;
                 break;
             }
         }
-
-        return toReturn;
     }
 
     public Player[] getListOfPlayers() {
@@ -73,9 +86,9 @@ public class Board {
     }
 
     public void nextTurn() {
-        if(currentPlayer++ == listOfPlayers.length){
-            currentPlayer = 0;
-        }
+        previousPlayer = currentPlayer;
+        if (currentPlayer < totalPlayer - 1) currentPlayer++;
+        else currentPlayer = 0;
     }
 
     public Dice getDice() {
@@ -93,7 +106,7 @@ public class Board {
     public Player getPlayerByID(int id){
         Player toReturn = null;
         for (Player p : listOfPlayers) {
-            if (p.getID() == id) {
+            if (p.getId() == id) {
                 toReturn = p;
             }
         }
@@ -109,10 +122,10 @@ public class Board {
         this.listOfSquares = listOfSquares;
     }
 
-    /*public void deleteListOfSquares() {
-        this.listOfSquares.deleteList();
+    public void deleteListOfSquares() {
+        //this.listOfSquares.deleteList();
         this.listOfSquares = null;
-    }*/
+    }
 
     // TODO (KANSKE) kan vara bra att hålla koll på antalet squares.
 }
@@ -150,11 +163,6 @@ public Player getMaxMoneyPlayer() {
 
 public int normalizePosition(int position) {
         return position % squares.length;
-        }
-
-
-public int getTotalSquare() {
-        return squares.length;
         }
 
         }*/

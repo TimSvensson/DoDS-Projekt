@@ -6,25 +6,34 @@ public class Player {
     protected int prevPosition = 0;
     protected int position = 0;
     protected int totalwalk = 0;
+    protected int turn;
     String name;
-    //String ip; Kanske ska länka detta i monopolet istället så att id:et länkar till en spelares IP
     Money money = new Money(5000); //haha u poor bitch?
 
-
-    public Player(int id, String name) {
-        this.id = id;
+    public Player(int turn, String name) {
+        this.turn = turn;
         this.name = name;
     }
-
 
     public int getTotalWalk(){
         return totalwalk;
     }
 
+    public int getId() {
+        return id;
+    }
 
-   /* *public String getIp() {
-        return ip;
-    }*/
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getTurn() {
+        return turn;
+    }
+
+    public void setTurn(int turn) {
+        this.turn = turn;
+    }
 
     public int getPosition(){
         return this.position;
@@ -37,9 +46,7 @@ public class Player {
     protected void incrementPosition(int p) {
         this.position += p;
     }
-    public int getID(){
-        return id;
-    }
+
     public String getName(){
         return name;
     }
@@ -47,7 +54,7 @@ public class Player {
     public int tossDie(Dice die){
         int die1 = die.getDie1();
         int die2 = die.getDie2();
-        System.out.println("Player " + getID() + " tossed die 1 and got: " + die1 + "\nPlayer " + getID() + " tossed die2 and got: "+ die2);
+        System.out.println("Player " + getId() + " tossed die 1 and got: " + die1 + "\nPlayer " + getId() + " tossed die2 and got: "+ die2);
         return (die1 + die2);
     }
 }

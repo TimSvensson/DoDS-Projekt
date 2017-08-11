@@ -17,6 +17,8 @@ public class Game implements Runnable {
     Board gameState;
     String host = "localhost";
     int port = 9000;
+    Gson gsonParser = new Gson();
+
 
     public Game() {}
 
@@ -28,16 +30,18 @@ public class Game implements Runnable {
         if (iAmHost()) createGame(host, port);
         else joinGame(host, port);
 
-        // Update the graphical user interface with the current gamestate
-        updateGUI();
 
         while(true) {
-            String newGameState = readFromServer();
+            Board newGameState = readFromServer();
+
+            // Update the graphical user interface with the current gamestate
+            updateGUI(newGameState);
+
             if (isMyTurn()) {
                 play(newGameState);
                 if (gameState.wasDoubleDice()) {
                     System.out.println("Double dice! You get another turn");
-                    gameState.setCurrentPlayer(gameState.getPreviousplayer());
+                    gameState.setCurrentPlayer(gameState.getPreviousPlayer().getTurn());
                 }
                 sendToServer(gameState);
             }
@@ -63,8 +67,7 @@ public class Game implements Runnable {
     }
 
     private void createGame(String host, int port) {
-        String [] squares = {"Street 1", "Street 2", "Street 3", "Street 4", "Street 5", "Street 6", "Street 7", "Street 8","Street 9", "Street 10"};
-        gameState = new Board(4, squares);
+        gameState = new Board(4);
 
         server = new Server(port);
         client = new Client(host, port);
@@ -82,14 +85,18 @@ public class Game implements Runnable {
         return client.isClosed();
     }
 
-    private void updateGUI() {
+    private void updateGUI(Board newGameState) {
+        gameState = newGameState;
+
+        Player previousPlayer = gameState.getPreviousPlayer();
+        Square previousSquare = gameState.getPreviousSquare();
+
+        System.out.println("Player " + previousPlayer.getId() + " tossed " + gameState.getDice() + " and moved to " + previousSquare.getName());
+
     }
 
     private void initGUI() {
-
-    }
-
-    private void startClient(String host, int port) {
+        System.out.println("Hello and welcome to the Monopoly game!");
     }
 
     private void terminateClient() {
@@ -97,15 +104,14 @@ public class Game implements Runnable {
     }
 
     private void sendToServer(Board newGameState) {
-        client.write((new Gson()).toJson(newGameState));
+        client.write(gsonParser.toJson(newGameState));
     }
 
-    private String readFromServer() {
-        return client.read();
+    private Board readFromServer() {
+        return gsonParser.fromJson(client.read(), Board.class);
     }
 
-    private void play(String JSONgameState) {
-        gameState = (new Gson()).fromJson(JSONgameState, Board.class);
+    private void play(Board JSONgameState) {
         gameState.movePlayer();
     }
 
