@@ -30,10 +30,14 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @since JDK 1.8
  */
 public class Client implements Runnable {
-		
+
 		// TODO Make all clients create a backupServer
 
-//<editor-fold desc="FieldVariables">
+public Address getfServerAddress() {
+	return fServerAddress;
+}
+
+	//<editor-fold desc="FieldVariables">
 private Address fServerAddress;
 
 private Socket fServerSocket;
@@ -67,7 +71,7 @@ public void run() {
 				}
 				listen();
 				disconnect();
-				
+
 				if (fBackupServers == null || fBackupServers.isEmpty()) {
 						loop = false;
 				} else {
@@ -83,7 +87,7 @@ public void setup() {
 		t.setName("Client-" + t.getId());
 		t.setDaemon(true);
 		t.start();
-		
+
 		try {
 				Thread.sleep(100);
 		} catch (InterruptedException pE) {
@@ -155,7 +159,7 @@ private void listen() {
 						fWriter.println(Flags.ping);
 						fWriter.flush();
 						unresolvedPings++;
-						
+
 						while (fReader.ready()) {
 								String s = fReader.readLine();
 								StringTokenizer st = new StringTokenizer(s);
@@ -183,14 +187,14 @@ private void listen() {
 												break;
 								}
 						}
-						
+
 						Thread.sleep(100);
 				} catch (IOException pE) {
 						Logger.log("IOException!");
 				} catch (InterruptedException pE) {
 						Logger.log("Interrupted!");
 				}
-				
+
 				if (unresolvedPings >= 5) {
 						Logger.log("Five or more unresolved pings.");
 						loop = false;
@@ -201,20 +205,20 @@ private void listen() {
 
 private boolean setBackupServers(String pList) {
 		StringTokenizer st = new StringTokenizer(pList);
-		
+
 		if (!Flags.new_backup_server.equals(st.nextToken())) {
 				return false;
 		}
-		
+
 		fBackupServers = new ArrayList<>();
 		while (st.hasMoreTokens()) {
-				
+
 				String host = st.nextToken();
 				int port = Integer.parseInt(st.nextToken());
-				
+
 				fBackupServers.add(new Address(host, port));
 		}
-		
+
 		return true;
 }
 //</editor-fold>

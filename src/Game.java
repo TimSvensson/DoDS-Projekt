@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 
 import java.io.Console;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Scanner;
 
 /**
  * Created by axelhellman on 2016-12-08.
@@ -13,71 +15,67 @@ public class Game implements Runnable {
     Server server;
     Client client;
     Board gameState;
-    String host = "";
-    int port = 0;
+    String host = "localhost";
+    int port = 9000;
 
     public Game() {}
 
-    public void init() {
+    public void run() {
+        // Initiate the graphical user interface
+        initGUI();
 
-        try {
-            initGUI();
+        // Check if a game-server already exists, if not then create and setup one, else join one
+        if (iAmHost()) createGame(host, port);
+        else joinGame(host, port);
 
-            if (iAmHost()) createGame(host, port);
-            else joinGame(host, port);
+        // Update the graphical user interface with the current gamestate
+        updateGUI();
 
-            updateGUI();
-
-            while(true) {
-                String newGameState = readFromServer();
-                if (isMyTurn()) {
-                    play(newGameState);
-                    if (gameState.wasDoubleDice()) {
-                        System.out.println("Double dice! You get another turn");
-                        gameState.setCurrentPlayer(gameState.getPreviousplayer());
-                    }
-                    sendToServer(gameState);
+        while(true) {
+            String newGameState = readFromServer();
+            if (isMyTurn()) {
+                play(newGameState);
+                if (gameState.wasDoubleDice()) {
+                    System.out.println("Double dice! You get another turn");
+                    gameState.setCurrentPlayer(gameState.getPreviousplayer());
                 }
-
-                if (gameIsOver()) break;
+                sendToServer(gameState);
             }
 
-            terminateClient();
-
-        } catch (IOException e) {
-            e.printStackTrace();
+            if (gameIsOver()) break;
         }
 
-    }
-
-    public void run() {
+        terminateClient();
 
     }
 
     private boolean iAmHost() {
-        Console console = System.console();
+        Scanner scanner = new Scanner(System.in);
         System.out.println("Are you the host?");
 
-        String answer = console.readLine();
-
         while(true) {
-            if (answer.toLowerCase().equals("Yes")) return true;
-            if (answer.toLowerCase().equals("No")) return false;
-            System.out.println("Please answer yes or no, you product of generations of incest and goatfucking.");
+            String answer = scanner.nextLine();
+            if (answer.toLowerCase().equals("yes")) return true;
+            if (answer.toLowerCase().equals("no")) return false;
+            System.out.println("Please answer yes or no, you vile product of generations of incest and goatfucking.");
         }
 
     }
 
     private void createGame(String host, int port) {
-        String [] playerNames = {"Player 1", "Player 2", "Player 3", "Player 4"};
-        gameState = new Board(4, playerNames);
+        String [] squares = {"Street 1", "Street 2", "Street 3", "Street 4", "Street 5", "Street 6", "Street 7", "Street 8","Street 9", "Street 10"};
+        gameState = new Board(4, squares);
 
-        (server = new Server(port)).setup();
-        (client = new Client(host, port)).setup();
+        server = new Server(port);
+        client = new Client(host, port);
+
+        server.setup();
+        client.setup();
     }
 
     private void joinGame(String host, int port) {
-        (client = new Client(host, port)).setup();
+        client = new Client(host, port);
+        client.setup();
     }
 
     private boolean gameIsOver() {
