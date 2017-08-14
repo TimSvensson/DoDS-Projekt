@@ -3,6 +3,7 @@ import DistributedSystem.Client.Client;
 import DistributedSystem.Server.Server;
 import com.google.gson.Gson;
 
+import java.io.BufferedReader;
 import java.io.Console;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,6 +22,7 @@ public class Game implements Runnable {
     String host = "localhost";
     int port = 9000;
     Gson gsonParser = new Gson();
+    int totalPlayers = 0;
 
     boolean isHost = false;
 
@@ -38,11 +40,15 @@ public class Game implements Runnable {
         // Check if a game-server already exists, if not then create and setup one, else join one
         if (iAmHost()) createGame(host, port);
         else joinGame(host, port);
-        refreshListOfClients();
 
+        System.out.println("Waiting for the player caount to rise to " + totalPlayers + "...");
+        while (listOfClients.size() < totalPlayers) refreshListOfClients();
+        System.out.println("We finally have " + totalPlayers + " players!! \n Game on bitches.");
+
+        // Spel-loop
         while(true) {
-            // Hosten ska inte läsa från servern första gången
-            if (!isHost) gameState = readFromServer();
+            // TODO Hosten ska inte läsa från servern första gången
+            gameState = readFromServer();
 
             // Update the graphical user interface with the current gamestate
             updateGUI(gameState);
@@ -63,14 +69,41 @@ public class Game implements Runnable {
 
     }
 
+    private void setTotalPlayers(BufferedReader reader) {
+        System.out.println("How many players should we expect today?");
+
+        String ans = null;
+        while (true) {
+            try {
+                ans = reader.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                totalPlayers = Integer.parseInt(ans);
+                System.out.println("Sar chaw bra, " + totalPlayers + " players it is!");
+                break;
+            }
+            catch(NumberFormatException e) {
+                System.out.println("Quzalqort qahbabab, are you so dumb to think that " + ans + " is a number?!\n Try again sagi sagbab ba let nayem");
+            }
+        }
+    }
+
     private boolean iAmHost() {
-        Scanner scanner = new Scanner(System.in);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         System.out.println("Are you the host?");
 
+        String answer = null;
         while(true) {
-            String answer = scanner.nextLine();
+            try {
+                answer = reader.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             if (answer.toLowerCase().equals("yes")) {
                 isHost = true;
+                setTotalPlayers(reader);
                 break;
             }
             else if (answer.toLowerCase().equals("no")) {
@@ -86,7 +119,7 @@ public class Game implements Runnable {
     }
 
     private void createGame(String host, int port) {
-        gameState = new Board(4);
+        gameState = new Board(totalPlayers);
 
         server = new Server(port);
         client = new Client(host, port);
