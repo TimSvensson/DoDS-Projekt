@@ -60,6 +60,8 @@ public Server(int pPortNumber) {
 
 //</editor-fold>
 
+
+
 //<editor-fold desc="PublicMethods">
 public void setup() {
 		
@@ -148,7 +150,7 @@ private void mainServerSetup() {
 
 private void waitForConnection(ServerSocket pLSS) throws IOException {
 		try {
-				Logger.log("Waiting for new connection.");
+				//Logger.log("Waiting for new connection.");
 				Connection connection = new Connection(pLSS.accept(), getNextClientID());
 				
 				String connectionType = connection.read();
@@ -372,7 +374,7 @@ private class ServerEcho implements Runnable {
 								writeToAll(s);
 						}
 				} catch (InterruptedException pE) {
-						Logger.log("I was interrupted!");
+						Logger.log("Interrupted!");
 				}
 				
 				Logger.log("Stopping ServerEcho.");
