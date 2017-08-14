@@ -23,12 +23,12 @@ public class Address {
 
 private final String address;
 private final int port;
-private final long id;
+private final int id;
 
-public Address(String pAddress, int pPort, long pID) {
-		port = pPort;
-		address = pAddress;
-		id = pID;
+public Address(String address, int port, int id) {
+		this.port = port;
+		this.address = address;
+		this.id = id;
 }
 
 public int getPort() {
@@ -39,7 +39,7 @@ public String getAddress() {
 		return address;
 }
 
-public long getID() {
+public int getID() {
 		return id;
 }
 
