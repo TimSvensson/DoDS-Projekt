@@ -1,3 +1,4 @@
+import DistributedSystem.Address;
 import DistributedSystem.Client.Client;
 import DistributedSystem.Server.Server;
 import com.google.gson.Gson;
@@ -5,6 +6,8 @@ import com.google.gson.Gson;
 import java.io.Console;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -19,6 +22,12 @@ public class Game implements Runnable {
     int port = 9000;
     Gson gsonParser = new Gson();
 
+    boolean isHost = false;
+
+    /**
+     * The Integer holds the turn of the players in the game, the Address hold the IP and ID of the corresponding clients
+     */
+    HashMap<Integer, Address> listOfClients = new HashMap<>();
 
     public Game() {}
 
@@ -29,16 +38,17 @@ public class Game implements Runnable {
         // Check if a game-server already exists, if not then create and setup one, else join one
         if (iAmHost()) createGame(host, port);
         else joinGame(host, port);
-
+        refreshListOfClients();
 
         while(true) {
-            Board newGameState = readFromServer();
+            // Hosten ska inte läsa från servern första gången
+            if (!isHost) gameState = readFromServer();
 
             // Update the graphical user interface with the current gamestate
-            updateGUI(newGameState);
+            updateGUI(gameState);
 
             if (isMyTurn()) {
-                play(newGameState);
+                play(gameState);
                 if (gameState.wasDoubleDice()) {
                     System.out.println("Double dice! You get another turn");
                     gameState.setCurrentPlayer(gameState.getPreviousPlayer().getTurn());
@@ -59,11 +69,20 @@ public class Game implements Runnable {
 
         while(true) {
             String answer = scanner.nextLine();
-            if (answer.toLowerCase().equals("yes")) return true;
-            if (answer.toLowerCase().equals("no")) return false;
-            System.out.println("Please answer yes or no, you vile product of generations of incest and goatfucking.");
+            if (answer.toLowerCase().equals("yes")) {
+                isHost = true;
+                break;
+            }
+            else if (answer.toLowerCase().equals("no")) {
+                isHost = false;
+                break;
+            }
+            else {
+                System.out.println("Please answer yes or no, you vile product of generations of incest and goatfucking.");
+            }
         }
 
+        return isHost;
     }
 
     private void createGame(String host, int port) {
@@ -74,6 +93,7 @@ public class Game implements Runnable {
 
         server.setup();
         client.setup();
+
     }
 
     private void joinGame(String host, int port) {
@@ -100,11 +120,11 @@ public class Game implements Runnable {
     }
 
     private void terminateClient() {
-        // TODO client.terminate();
+        client.disconnect();
     }
 
-    private void sendToServer(Board newGameState) {
-        client.write(gsonParser.toJson(newGameState));
+    private void sendToServer(Board gameState) {
+        client.write(gsonParser.toJson(gameState));
     }
 
     private Board readFromServer() {
@@ -115,7 +135,16 @@ public class Game implements Runnable {
         gameState.movePlayer();
     }
 
-    public boolean isMyTurn() {
-        return false;
+    private boolean isMyTurn() {
+        refreshListOfClients();
+        return client.getId() == listOfClients.get(gameState.getCurrentTurn()).getID();
+    }
+
+    private void refreshListOfClients() {
+        List<Address> addresses = client.getClients();
+
+        for (int i = 0; i < addresses.size() - 1; i++) {
+            listOfClients.putIfAbsent(i, addresses.get(i));
+        }
     }
 }

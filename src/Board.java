@@ -14,29 +14,15 @@ public class Board {
     private Deck deck_1;
     private Deck deck_2;
     private Deck deck_3;
-    private int currentPlayer = 0;
-    private int previousPlayer = -1;
+    private int currentTurn = 0;
+    private int previousTurn = -1;
+
+    private String currentPlayerIP;
+    private int currentPlayerId;
+
     private Square [] listOfSquares = new Square[nameOfSquares.length];
     private Square currentSquare;
     private Square previousSquare;
-
-    public Square getCurrentSquare() {
-        return currentSquare;
-    }
-
-    public Square getPreviousSquare() {
-        return previousSquare;
-    }
-
-    public void setCurrentPlayer(int currentPlayer) {
-        this.currentPlayer = currentPlayer;
-    }
-
-
-    public Player getPreviousPlayer() {
-        return listOfPlayers[previousPlayer];
-    }
-
 
     public Board(int totalPlayer) {
         listOfPlayers = new Player[totalPlayer];
@@ -66,6 +52,54 @@ public class Board {
         updateSquares(currentPlayerPosition);
     }
 
+    public int getCurrentTurn() {
+        return currentTurn;
+    }
+
+    public void setCurrentTurn(int currentTurn) {
+        this.currentTurn = currentTurn;
+    }
+
+    public int getPreviousTurn() {
+        return previousTurn;
+    }
+
+    public void setPreviousTurn(int previousTurn) {
+        this.previousTurn = previousTurn;
+    }
+
+    public void setCurrentPlayerIP(String currentPlayerIP) {
+        this.currentPlayerIP = currentPlayerIP;
+    }
+
+    public void setCurrentPlayerId(int currentPlayerId) {
+        this.currentPlayerId = currentPlayerId;
+    }
+
+    public String getCurrentPlayerIP() {
+        return this.currentPlayerIP;
+    }
+
+    public int getCurrentPlayerId() {
+        return this.currentPlayerId;
+    }
+
+    public Square getCurrentSquare() {
+        return currentSquare;
+    }
+
+    public Square getPreviousSquare() {
+        return previousSquare;
+    }
+
+    public void setCurrentPlayer(int currentPlayer) {
+        this.currentTurn = currentPlayer;
+    }
+
+    public Player getPreviousPlayer() {
+        return listOfPlayers[previousTurn];
+    }
+
     public void updateSquares(int currentPlayerPosition) {
         previousSquare = currentSquare;
 
@@ -82,13 +116,13 @@ public class Board {
     }
 
     public Player getCurrentPlayer() {
-        return listOfPlayers[currentPlayer];
+        return listOfPlayers[currentTurn];
     }
 
     public void nextTurn() {
-        previousPlayer = currentPlayer;
-        if (currentPlayer < totalPlayer - 1) currentPlayer++;
-        else currentPlayer = 0;
+        previousTurn = currentTurn;
+        if (currentTurn < totalPlayer - 1) currentTurn++;
+        else currentTurn = 0;
     }
 
     public Dice getDice() {
