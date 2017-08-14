@@ -114,20 +114,18 @@ public void terminate() {
 //</editor-fold>
 
 //<editor-fold desc="PrivateMethods">
-private void waitLoop(BufferedReader pReader, PrintWriter pWriter) {
+private void waitLoop(BufferedReader reader, PrintWriter writer) {
 		
 		Logger.log("Entering waitLoop().");
 		
 		boolean loop = true;
 		while (loop) {
 				try {
-						pWriter.println(Flags.ping);
-						pWriter.flush();
+						writer.println(Flags.ping);
+						writer.flush();
 						unresolvedPings++;
 						
-						while (pReader.ready()) {
-								loop = protocol(pReader, pWriter);
-						}
+						loop = protocol(reader, writer);
 						
 						Thread.sleep(100);
 				} catch (IOException pE) {
@@ -148,32 +146,33 @@ private boolean protocol(BufferedReader reader, PrintWriter writer) throws IOExc
 		
 		boolean loop = true;
 		
-		String s = reader.readLine();
-		StringTokenizer st = new StringTokenizer(s);
-		switch (st.nextToken()) {
-				case Flags.ping_response:
-						unresolvedPings--;
-						break;
-				case Flags.server_terminating:
-						Logger.log(Flags.server_terminating + " received.");
-						loop = false;
-						isRunning = false;
-						break;
-				case Flags.ping:
-						writer.println(Flags.ping_response);
-						break;
-				case Flags.new_backup_server:
-						addBackupServer(s);
-						break;
-				case Flags.all_backup_servers:
-						setBackupServers(s);
-						break;
-				case Flags.id:
-						id = Integer.parseInt(st.nextToken());
-						Logger.log("My ID: " + id);
-						break;
+		while (reader.ready()) {
+				String s = reader.readLine();
+				StringTokenizer st = new StringTokenizer(s);
+				switch (st.nextToken()) {
+						case Flags.ping_response:
+								unresolvedPings--;
+								break;
+						case Flags.server_terminating:
+								Logger.log(Flags.server_terminating + " received.");
+								loop = false;
+								isRunning = false;
+								break;
+						case Flags.ping:
+								writer.println(Flags.ping_response);
+								break;
+						case Flags.new_backup_server:
+								addBackupServer(s);
+								break;
+						case Flags.all_backup_servers:
+								setBackupServers(s);
+								break;
+						case Flags.id:
+								id = Integer.parseInt(st.nextToken());
+								Logger.log("My ID: " + id);
+								break;
+				}
 		}
-		
 		return loop;
 }
 
