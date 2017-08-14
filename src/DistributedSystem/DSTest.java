@@ -13,7 +13,6 @@ import DistributedSystem.Client.Client;
 import DistributedSystem.Server.BackupServer;
 import DistributedSystem.Server.Server;
 
-import java.io.IOException;
 import java.util.Collections;
 
 /**
@@ -44,33 +43,37 @@ public DSTest() {
 public void runTests() {
 		boolean[] results = new boolean[5];
 		String resFormat = "%s %25s %10B";
-		String bannerFormat = "%1$-25s %2$s %1$25s";
-		String bannerStr = String.join("", Collections.nCopies(20, "="));
+		int lengthOfBanner = 60;
 		
 		try {
 				int wait = 500;
 				
-				Logger.log(String.format(bannerFormat, bannerStr, "oneClientEchoTest"));
+				String t1 = "oneClientEchoTest";
+				Logger.log(getBanner(t1, lengthOfBanner));
 				Logger.log(String.format(resFormat, "RESULTS:", "oneClientEchoTest",
 										 results[0] = oneClientEchoTest()));
 				Thread.sleep(wait);
 				
-				Logger.log(String.format(bannerFormat, bannerStr, "twoClientEchoTest"));
+				String t2 = "twoClientEchoTest";
+				Logger.log(getBanner(t2, lengthOfBanner));
 				Logger.log(String.format(resFormat, "RESULTS:", "twoClientEchoTest",
 										 results[1] = twoClientEchoTest()));
 				Thread.sleep(wait);
 				
-				Logger.log(String.format(bannerFormat, bannerStr, "clientDisconnectTest"));
+				String t3 = "clientDisconnectTest";
+				Logger.log(getBanner(t3, lengthOfBanner));
 				Logger.log(String.format(resFormat, "RESULTS:", "clientDisconnectTest",
 										 results[2] = clientDisconnectTest()));
 				Thread.sleep(wait);
 				
-				Logger.log(String.format(bannerFormat, bannerStr, "serverTerminationTest"));
+				String t4 = "serverTerminationTest";
+				Logger.log(getBanner(t4, lengthOfBanner));
 				Logger.log(String.format(resFormat, "RESULTS:", "serverTerminationTest",
 										 results[3] = serverTerminationTest()));
 				Thread.sleep(wait);
 				
-				Logger.log(String.format(bannerFormat, bannerStr, "backupServerTest"));
+				String t5 = "backupServerTest";
+				Logger.log(getBanner(t5, lengthOfBanner));
 				Logger.log(String.format(resFormat, "RESULTS:", "backupServerTest",
 										 results[4] = backupServerTest()));
 				
@@ -79,7 +82,7 @@ public void runTests() {
 				pE.printStackTrace();
 		}
 		
-		Logger.log(String.format(bannerFormat, bannerStr, "RESULTS"));
+		Logger.log(getBanner("RESULTS", lengthOfBanner));
 		Logger.log(String.format(resFormat, "RESULTS:", "oneClientEchoTest", results[0]));
 		Logger.log(String.format(resFormat, "RESULTS:", "twoClientEchoTest", results[1]));
 		Logger.log(String.format(resFormat, "RESULTS:", "clientDisconnectTest", results[2]));
@@ -89,6 +92,29 @@ public void runTests() {
 //</editor-fold>
 
 //<editor-fold desc="PrivateMethods">
+private String getBanner(String s, int lengthOfBanner) {
+		
+		String flareChar = "=";
+		String whiteSpaceChar = " ";
+		int lengthOfString = s.length();
+		String banner = "";
+		int whiteSpace = 5;
+		int flareLength = lengthOfBanner/2 - lengthOfString/2 - whiteSpace;
+		
+		banner = banner + String.join("", Collections.nCopies(flareLength, flareChar));
+		if (lengthOfString % 2 == 0) {
+				banner = banner + String.join("", Collections.nCopies(whiteSpace, whiteSpaceChar));
+		} else {
+				banner = banner + String.join("", Collections.nCopies(whiteSpace-1,
+																	  whiteSpaceChar));
+		}
+		banner = banner + String.join("", s);
+		banner = banner + String.join("", Collections.nCopies(whiteSpace, whiteSpaceChar));
+		banner = banner + String.join("", Collections.nCopies(flareLength, flareChar));
+		
+		return banner;
+}
+
 private boolean oneClientEchoTest() {
 		//TODO One client sends a msg to one server, all clients receives the msg.
 		
@@ -199,9 +225,9 @@ private boolean clientDisconnectTest() {
 				Logger.log("String s2 misread.");
 				return false;
 		}
-
 		
 		server.terminate();
+		
 		
 		return true;
 }
@@ -232,21 +258,9 @@ private boolean serverTerminationTest() {
 		
 		server.terminate();
 		
-		try {
-				Thread.sleep(400);
-		} catch (InterruptedException pE) {
-				pE.printStackTrace();
-		}
-		
-		if (!(c1.isClosed() && c2.isClosed())) {
+		if (!(c1.isDisconnected() && c2.isDisconnected())) {
 				Logger.log("c1 or c2 has not disconnected properly.");
 				return false;
-		}
-		
-		try {
-				Thread.sleep(200);
-		} catch (InterruptedException pE) {
-				pE.printStackTrace();
 		}
 		
 		if (!server.isTerminated()) {
@@ -267,8 +281,8 @@ private boolean backupServerTest() {
 		int bsPort2 = 9007;
 		
 		Server ms = new Server(port);
-		BackupServer bs1 = new BackupServer(new Address(host, port), bsPort1);
-		BackupServer bs2 = new BackupServer(new Address(host, port), bsPort2);
+		BackupServer bs1 = new BackupServer(new Address(host, port, -1), bsPort1);
+		BackupServer bs2 = new BackupServer(new Address(host, port, -1), bsPort2);
 		
 		Client c1 = new Client(host, port);
 		Client c2 = new Client(host, port);
@@ -280,26 +294,41 @@ private boolean backupServerTest() {
 		c1.setup();
 		c2.setup();
 		
+		Logger.log("TEST: Checking communication.");
+		String test1 = "test1";
+		c1.write(test1);
+		
+		String c1Resp1 = c1.read();
+		String c2Resp1 = c2.read();
+		
+		Logger.log("TEST: c1Resp: " + c1Resp1);
+		Logger.log("TEST: c2Resp: " + c2Resp1);
+		
 		// Crashes the main server
+		Logger.log("TEST: Stopping main server.");
 		ms.stop();
 		
 		// TODO Check to see if backupServer takes over
 		
 		// TODO Check if clients still can communicate
-		String test = "test";
-		c1.write(test);
+		Logger.log("TEST: Checking communication.");
+		String test2 = "test2";
+		c1.write(test2);
 		
-		String c1Resp = c1.read();
-		String c2Resp = c2.read();
+		String c1Resp2 = c1.read();
+		String c2Resp2 = c2.read();
 		
-		Logger.log("c1Resp: " + c1Resp);
-		Logger.log("c2Resp: " + c2Resp);
+		Logger.log("TEST: c1Resp: " + c1Resp2);
+		Logger.log("TEST: c2Resp: " + c2Resp2);
 		
-		if (c1Resp.equals(test) && c2Resp.equals(test)) {
+		if (c1Resp2.equals(test2) && c2Resp2.equals(test2)) {
 				result = true;
 		}
 		
 		ms.terminate();
+		bs1.newMainServer.terminate();
+		bs1.terminate();
+		bs2.terminate();
 		
 		return result;
 }

@@ -25,9 +25,9 @@ import java.util.Collections;
 public class Logger {
 
 //<editor-fold desc="FieldVariables">
-private static boolean fsFirstEntry = true;
-private static String fsLogFormat = "%-15s%-25s%s";
-private static PrintWriter fsWriter = new PrintWriter(System.out);
+private static boolean isFirstEntry = true;
+private static String logFormat = "%-15s%-25s%-60s";
+private static PrintWriter writer = new PrintWriter(System.out);
 //</editor-fold>
 
 //<editor-fold desc="Constructors">
@@ -42,16 +42,16 @@ public Logger() {
 
 //<editor-fold desc="PublicMethods">
 public static void log(String pMessage) {
-	if (fsFirstEntry) {
-		fsFirstEntry = false;
-		fsWriter.println(String.format(fsLogFormat, "CRNT SYS TIME", "THREAD", "MESSAGE"));
+	if (isFirstEntry) {
+			isFirstEntry = false;
+		writer.println(String.format(logFormat, "CRNT SYS TIME", "THREAD", "MESSAGE"));
 		
 		// create a string made up of n copies of s
-		fsWriter.println(String.join("", Collections.nCopies(80, "-")));
+		writer.println(String.join("", Collections.nCopies(100, "-")));
 	}
-	fsWriter.println(String.format(fsLogFormat, System.currentTimeMillis(),
-								   Thread.currentThread().getName(), pMessage));
-	fsWriter.flush();
+	writer.println(String.format(logFormat, System.currentTimeMillis(),
+								 Thread.currentThread().getName(), pMessage));
+	writer.flush();
 }
 //</editor-fold>
 

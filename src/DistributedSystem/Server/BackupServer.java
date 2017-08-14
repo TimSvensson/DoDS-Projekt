@@ -12,7 +12,6 @@ package DistributedSystem.Server;
 import DistributedSystem.Address;
 import DistributedSystem.Flags;
 import DistributedSystem.Logger;
-import sun.rmi.runtime.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,19 +34,19 @@ import java.util.StringTokenizer;
  */
 public class BackupServer implements Runnable {
 
+public Server newMainServer = null;
 //<editor-fold desc="FieldVariables">
-private Address fMainServerAddress;
+private Address mainServerAddress;
 private int backupPort;
-private ArrayList<Address> fBackupServers = new ArrayList<>();
-private boolean fRunning = true;
-
-public Server newMainServer;
+private ArrayList<Address> backupServers = new ArrayList<>();
+private boolean isRunning = true;
+private int id;
 //</editor-fold>
 
 //<editor-fold desc="Constructors">
 
 public BackupServer(Address pMainServerAddress, int pBackupPort) {
-		fMainServerAddress = pMainServerAddress;
+		mainServerAddress = pMainServerAddress;
 		backupPort = pBackupPort;
 }
 
@@ -61,22 +60,25 @@ public BackupServer(Address pMainServerAddress, int pBackupPort) {
 @Override
 public void run() {
 		Logger.log("Starting.");
-		while (fRunning) {
+		while (isRunning) {
 				Logger.log("Connecting to main server.");
-				try (Socket s = new Socket(fMainServerAddress.getAddress(),
-										   fMainServerAddress.getPort());
+				try (Socket s = new Socket(mainServerAddress.getAddress(),
+										   mainServerAddress.getPort());
 					 BufferedReader reader = new BufferedReader(
 						 new InputStreamReader(s.getInputStream()));
 					 PrintWriter writer = new PrintWriter(s.getOutputStream())) {
 						
-						Logger.log("Connected.");
+						backupPort = s.getLocalPort();
+						
+						Logger.log("Connected to " + s.toString());
 						
 						// Tell the main server who I am
 						writer.println(Flags.server_backup);
-						writer.flush();
+						
+						writer.println(Flags.id);
 						
 						// Request and save the list of backup server
-						writer.println(Flags.new_backup_server);
+						writer.println(Flags.all_backup_servers);
 						writer.flush();
 						
 						waitLoop(reader, writer);
@@ -87,16 +89,15 @@ public void run() {
 						pE.printStackTrace();
 				}
 				
-				if (fBackupServers.isEmpty()) {
-						fRunning = false;
-				} else if (
-					fBackupServers.get(0).getAddress().equals(new Socket().getLocalAddress()) &&
-					fBackupServers.get(0).getPort() == backupPort) {
-						
+				if (backupServers.isEmpty()) {
+						isRunning = false;
+				} else if (backupServers.get(0).getID() == id) {
 						newMainServer = new Server(backupPort);
+						newMainServer.setup();
+						isRunning = false;
 				} else {
-						fMainServerAddress = fBackupServers.get(0);
-						fBackupServers.remove(0);
+						mainServerAddress = backupServers.get(0);
+						backupServers.remove(0);
 				}
 		}
 		Logger.log("Stopping.");
@@ -108,11 +109,16 @@ public void setup() {
 		t.setDaemon(true);
 		t.start();
 }
+
+public void terminate() {
+		isRunning = false;
+}
 //</editor-fold>
 
 //<editor-fold desc="PrivateMethods">
 private void waitLoop(BufferedReader pReader, PrintWriter pWriter) {
 		
+		int unresolvedPingLimit = 4;
 		Logger.log("Entering waitLoop().");
 		int unresolvedPings = 0;
 		boolean loop = true;
@@ -132,18 +138,20 @@ private void waitLoop(BufferedReader pReader, PrintWriter pWriter) {
 										case Flags.server_terminating:
 												Logger.log(Flags.server_terminating + " received.");
 												loop = false;
-												fRunning = false;
+												isRunning = false;
 												break;
 										case Flags.ping:
 												pWriter.println(Flags.ping_response);
 												break;
 										case Flags.new_backup_server:
-												Logger.log(Flags.new_backup_server + " received.");
 												addBackupServer(s);
 												break;
 										case Flags.all_backup_servers:
-												Logger.log(Flags.all_backup_servers + " received.");
 												setBackupServers(s);
+												break;
+										case Flags.id:
+												id = Integer.parseInt(st.nextToken());
+												Logger.log("My ID: " + id);
 												break;
 								}
 						}
@@ -155,8 +163,8 @@ private void waitLoop(BufferedReader pReader, PrintWriter pWriter) {
 				} catch (InterruptedException pE) {
 						Logger.log("InterruptedException.");
 				}
-				if (unresolvedPings >= 5) {
-						Logger.log("Five or more unresolved pings.");
+				if (unresolvedPings >= unresolvedPingLimit) {
+						Logger.log(unresolvedPingLimit + " or more unresolved pings.");
 						loop = false;
 				}
 		}
@@ -168,27 +176,32 @@ private void addBackupServer(String pNewBackupServer) {
 		if (!Flags.new_backup_server.equals(st.nextToken())) {
 				return;
 		}
-		while (st.hasMoreTokens()) {
-				String host = st.nextToken();
-				int port = Integer.parseInt(st.nextToken());
-				fBackupServers.add(new Address(host, port));
+		if (backupServers == null) {
+				backupServers = new ArrayList<>();
 		}
-		Logger.log("Backup Servers:" + fBackupServers.toString());
+		while (st.hasMoreTokens()) {
+				backupServers.add(createAddress(st));
+		}
+		String log = "";
+		for (Address a : backupServers) {
+				log += " " + a.toString();
+		}
+		Logger.log("Backup servers: " + log);
 }
 
-private boolean setBackupServers(String pList) {
-		StringTokenizer st = new StringTokenizer(pList);
-		if (!Flags.new_backup_server.equals(st.nextToken())) {
-				return false;
-		}
-		fBackupServers = new ArrayList<>();
-		while (st.hasMoreTokens()) {
-				String host = st.nextToken();
-				int port = Integer.parseInt(st.nextToken());
-				fBackupServers.add(new Address(host, port));
-		}
-		Logger.log("Backup Servers:" + fBackupServers.toString());
-		return true;
+private void setBackupServers(String pList) {
+		backupServers = new ArrayList<>();
+		addBackupServer(pList);
 }
+
+private Address createAddress(StringTokenizer st) {
+		String host = st.nextToken();
+		int port = Integer.parseInt(st.nextToken());
+		int id = Integer.parseInt(st.nextToken());
+		
+		return new Address(host, port, id);
+}
+
+
 //</editor-fold>
 }

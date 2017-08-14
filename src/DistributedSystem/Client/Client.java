@@ -31,27 +31,29 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class Client implements Runnable {
 
-		// TODO Make all clients create a backupServer
+// TODO Make all clients create a backupServer
 
-public Address getfServerAddress() {
-	return fServerAddress;
-}
+//<editor-fold desc="FieldVariables">
+private boolean isRunning = true;
+private boolean isDisconnected = true;
 
-	//<editor-fold desc="FieldVariables">
-private Address fServerAddress;
+private String host;
+private int port;
+private int id;
 
-private Socket fServerSocket;
-private BufferedReader fReader;
-private PrintWriter fWriter;
+Socket server;
 
-private LinkedBlockingQueue<String> fQueue = new LinkedBlockingQueue<>();
+private LinkedBlockingQueue<String> queueToUser = new LinkedBlockingQueue<>();
+private LinkedBlockingQueue<String> queueFromUser = new LinkedBlockingQueue<>();
 
-private ArrayList<Address> fBackupServers;
+private ArrayList<Address> backupServers;
 //</editor-fold>
 
 //<editor-fold desc="Constructors">
-public Client(String pHostName, int pPortNumber) {
-		fServerAddress = new Address(pHostName, pPortNumber);
+public Client(String host, int port) {
+		this.host = host;
+		this.port = port;
+		
 }
 //</editor-fold>
 
@@ -64,114 +66,128 @@ public Client(String pHostName, int pPortNumber) {
 @Override
 public void run() {
 		Logger.log("Starts Running.");
-		boolean loop = true;
-		while (loop) {
-				if (fServerSocket == null || fServerSocket.isClosed()) {
-						connect();
-				}
-				listen();
-				disconnect();
-
-				if (fBackupServers == null || fBackupServers.isEmpty()) {
-						loop = false;
-				} else {
-						fServerAddress = fBackupServers.get(0);
-						fBackupServers.remove(0);
-				}
-		}
+		clientLoop(host, port);
 		Logger.log("Stops Running.");
 }
 
+/**
+ * Creates a new thread for this class, makes it a daemon thread, and calls it's run() method.
+ */
 public void setup() {
+		write(Flags.client);
+		write(Flags.all_backup_servers);
+		
 		Thread t = new Thread(this);
 		t.setName("Client-" + t.getId());
 		t.setDaemon(true);
 		t.start();
-
-		try {
-				Thread.sleep(100);
-		} catch (InterruptedException pE) {
-				pE.printStackTrace();
-		}
-}
-
-public void connect() {
-		Logger.log("Connecting to " + fServerAddress.getAddress() + " " + fServerAddress.getPort());
-		try {
-				fServerSocket = new Socket(fServerAddress.getAddress(), fServerAddress.getPort());
-				Logger.log("Opening streams");
-				fReader = new BufferedReader(new InputStreamReader(fServerSocket.getInputStream()));
-				fWriter = new PrintWriter(fServerSocket.getOutputStream());
-				write(Flags.client);
-		} catch (IOException pE) {
-				pE.printStackTrace();
-		}
-		Logger.log("Client connected and streams are open");
 }
 
 public void disconnect() {
-		fWriter.close();
-		try {
-				fReader.close();
-				fServerSocket.close();
-		} catch (IOException pE) {
-				pE.printStackTrace();
-		}
-		Logger.log("Socket closed.");
+		isRunning = false;
 }
 
-public void write(String pMessage) {
-		Logger.log("Sending \"" + pMessage + "\".");
-		fWriter.println(pMessage);
-		fWriter.flush();
+public void write(String s) {
+		queueFromUser.offer(s);
 }
 
 public String read() {
-		// TODO Make not blocking
-		while (!hasMessage()) {}
-		return fQueue.poll();
+		while (!hasMessage()) {
+		}
+		return queueToUser.poll();
 }
 
 public boolean hasMessage() {
-		return !fQueue.isEmpty();
+		return !queueToUser.isEmpty();
+}
+
+public boolean isDisconnected() {
+		return isDisconnected;
 }
 
 public boolean isClosed() {
-		return fServerSocket.isClosed();
+		return !isRunning;
 }
 
 @Override
 public String toString() {
-		// TODO Add more relevant information like:
-		// Size of MessageQueue
-		// List of server_backup Servers
-		return fServerSocket.toString();
+		String s = "%s %i %i", host, port, id;
+		return s;
 }
 //</editor-fold>
 
 //<editor-fold desc="PrivateMethods">
-private void listen() {
-		Logger.log("Starting listening.");
+private void clientLoop(String host, int port) {
+		while (isRunning) {
+				// Connect to the server.
+				connect(host, port);
+				isDisconnected = true;
+				
+				// If the termination was intended, break the loop.
+				if (!isRunning) {
+						break;
+				}
+				
+				// Otherwise:
+				// If there are no backup servers, isRunning client either way, or
+				if (backupServers == null || backupServers.isEmpty()) {
+						Logger.log("No backup servers. Terminating client.");
+						isRunning = false;
+				}
+				// If there are backup servers, connect to one of them.
+				else {
+						host = backupServers.get(0).getAddress();
+						port = backupServers.get(0).getPort();
+						Logger.log("Using backup server: " + backupServers.get(0).toString());
+						backupServers.remove(0);
+						
+						write(Flags.client);
+						write(Flags.all_backup_servers);
+				}
+		}
+}
+
+private void connect(String host, int port) {
+		Logger.log("Connecting to " + host + " " + port);
+		
+		try (Socket s = new Socket(host, port);) {
+				
+				Logger.log("Client connected.");
+				isDisconnected = false;
+				
+				listen(s);
+				
+		} catch (IOException e) {
+				Logger.log("IOException!");
+		}
+}
+
+private void listen(Socket s) throws IOException {
+		
+		Logger.log("Starting listen().");
+		int unresolvedPingLimit = 6;
+		
+		BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
+		PrintWriter writer = new PrintWriter(s.getOutputStream());
+		
 		int unresolvedPings = 0;
 		boolean loop = true;
 		while (loop) {
 				try {
-						fWriter.println(Flags.ping);
-						fWriter.flush();
-						unresolvedPings++;
-
-						while (fReader.ready()) {
-								String s = fReader.readLine();
-								StringTokenizer st = new StringTokenizer(s);
+						while (reader.ready()) {
+								String line = reader.readLine();
+								Logger.log("Received \"" + line + "\"");
+								StringTokenizer st = new StringTokenizer(line);
 								switch (st.nextToken()) {
 										case Flags.server_terminating:
-												Logger.log("\"" + Flags.server_terminating +
-														   "\" received.");
 												loop = false;
-												disconnect();
-												return;
+												isRunning = false;
+												break;
+										case Flags.all_backup_servers:
+												setBackupServers(line);
+												break;
 										case Flags.new_backup_server:
-												setBackupServers(s);
+												addBackupServer(line);
 												break;
 										case Flags.ping:
 												write(Flags.ping_response);
@@ -180,46 +196,66 @@ private void listen() {
 												unresolvedPings--;
 												break;
 										case Flags.new_client:
-												Logger.log("New client connected: " + s);
+												//queueToUser.offer(s);
 												break;
 										default:
-												fQueue.offer(s);
+												queueToUser.offer(line);
 												break;
 								}
 						}
-
+						
+						// TODO Move pinging somewhere else, this is supposed to only be listening.
+						write(Flags.ping);
+						unresolvedPings++;
+						
+						while (!queueFromUser.isEmpty()) {
+								String msg = queueFromUser.poll();
+								Logger.log("Sending \"" + msg + "\"");
+								writer.println(msg);
+								writer.flush();
+						}
+						
 						Thread.sleep(100);
-				} catch (IOException pE) {
-						Logger.log("IOException!");
 				} catch (InterruptedException pE) {
 						Logger.log("Interrupted!");
 				}
-
-				if (unresolvedPings >= 5) {
-						Logger.log("Five or more unresolved pings.");
+				if (unresolvedPings >= unresolvedPingLimit) {
+						Logger.log(unresolvedPingLimit + " or more unresolved pings.");
 						loop = false;
 				}
 		}
-		Logger.log("Stopping listening.");
+		Logger.log("Stopping listen().");
 }
 
-private boolean setBackupServers(String pList) {
-		StringTokenizer st = new StringTokenizer(pList);
-
+private void addBackupServer(String pNewBackupServer) {
+		StringTokenizer st = new StringTokenizer(pNewBackupServer);
 		if (!Flags.new_backup_server.equals(st.nextToken())) {
-				return false;
+				return;
 		}
-
-		fBackupServers = new ArrayList<>();
+		if (backupServers == null) {
+				backupServers = new ArrayList<>();
+		}
 		while (st.hasMoreTokens()) {
-
-				String host = st.nextToken();
-				int port = Integer.parseInt(st.nextToken());
-
-				fBackupServers.add(new Address(host, port));
+				backupServers.add(createAddress(st));
 		}
+		String log = "";
+		for (Address a : backupServers) {
+				log += " " + a.toString();
+		}
+		Logger.log("Backup servers: " + log);
+}
 
-		return true;
+private void setBackupServers(String pList) {
+		backupServers = new ArrayList<>();
+		addBackupServer(pList);
+}
+
+private Address createAddress(StringTokenizer st) {
+		String host = st.nextToken();
+		int port = Integer.parseInt(st.nextToken());
+		int id = Integer.parseInt(st.nextToken());
+		
+		return new Address(host, port, id);
 }
 //</editor-fold>
 }

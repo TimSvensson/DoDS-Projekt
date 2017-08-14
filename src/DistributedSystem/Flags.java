@@ -31,6 +31,6 @@ public static final String server_terminating = "##server_terminating";
 public static final String disconnect = "##disconnect";
 public static final String new_backup_server = "##new_backup_server";
 public static final String all_backup_servers = "##all_backup_servers";
-
+public static final String id = "##id";
 
 }

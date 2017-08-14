@@ -21,24 +21,30 @@ package DistributedSystem;
  */
 public class Address {
 
-		private final String fAddress;
-		private final int fPort;
-		
-		public Address(String pAddress, int pPort) {
-				fPort = pPort;
-				fAddress = pAddress;
-		}
-		
-		public int getPort() {
-				return fPort;
-		}
-		
-		public String getAddress() {
-				return fAddress;
-		}
-		
-		@Override
-		public String toString() {
-				return fAddress + ":" + fPort;
-		}
+private final String address;
+private final int port;
+private final long id;
+
+public Address(String pAddress, int pPort, long pID) {
+		port = pPort;
+		address = pAddress;
+		id = pID;
+}
+
+public int getPort() {
+		return port;
+}
+
+public String getAddress() {
+		return address;
+}
+
+public long getID() {
+		return id;
+}
+
+@Override
+public String toString() {
+		return address + " " + port + " " + id;
+}
 }
