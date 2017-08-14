@@ -41,12 +41,15 @@ private String host;
 private int port;
 private int id;
 
-Socket server;
+int unresolvedPings = 0;
+int unresolvedPingLimit = 6;
+int sleepTime = 100;
 
 private LinkedBlockingQueue<String> queueToUser = new LinkedBlockingQueue<>();
-private LinkedBlockingQueue<String> queueFromUser = new LinkedBlockingQueue<>();
+private LinkedBlockingQueue<String> queueToServer = new LinkedBlockingQueue<>();
 
 private ArrayList<Address> backupServers;
+private ArrayList<Address> clients;
 //</editor-fold>
 
 //<editor-fold desc="Constructors">
@@ -58,6 +61,14 @@ public Client(String host, int port) {
 //</editor-fold>
 
 //<editor-fold desc="GettersAndSetters">
+public ArrayList<Address> getBackupServers() {
+		return backupServers;
+}
+
+public ArrayList<Address> getClients() {
+		return clients;
+}
+
 public int getId() {
 		return id;
 }
@@ -94,11 +105,12 @@ public void setup() {
 }
 
 public void disconnect() {
+		write(Flags.disconnect);
 		isRunning = false;
 }
 
 public void write(String s) {
-		queueFromUser.offer(s);
+		queueToServer.offer(s);
 }
 
 public String read() {
@@ -118,8 +130,6 @@ public boolean isDisconnected() {
 public boolean isClosed() {
 		return !isRunning;
 }
-
-
 
 @Override
 public String toString() {
@@ -162,81 +172,85 @@ private void clientLoop(String host, int port) {
 private void connect(String host, int port) {
 		Logger.log("Connecting to " + host + " " + port);
 		
-		try (Socket s = new Socket(host, port);) {
+		try (Socket s = new Socket(host, port);
+			 BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
+			 PrintWriter writer = new PrintWriter(s.getOutputStream())) {
 				
-				Logger.log("Client connected.");
+				Logger.log("Client connected to " + host + " " + port + ".");
 				isDisconnected = false;
 				
-				listen(s);
-				
+				while (true) {
+						try {
+								if (!readProtocol(reader)) {
+										break;
+								}
+								
+								write(Flags.ping);
+								unresolvedPings++;
+								
+								writeToServer(writer);
+								
+								Thread.sleep(sleepTime);
+						} catch (InterruptedException e) {
+								Logger.log("Interrupted!");
+						}
+						if (unresolvedPings >= unresolvedPingLimit) {
+								Logger.log(unresolvedPingLimit + " or more unresolved pings.");
+								break;
+						}
+				}
 		} catch (IOException e) {
 				Logger.log("IOException!");
 		}
 }
 
-private void listen(Socket s) throws IOException {
+private void writeToServer(PrintWriter writer) {
+		while (!queueToServer.isEmpty()) {
+				String msg = queueToServer.poll();
+				writer.println(msg);
+				writer.flush();
+				
+				Logger.log("Sent \"" + msg + "\"");
+		}
+}
+
+private boolean readProtocol(BufferedReader reader) throws IOException {
 		
-		Logger.log("Starting listen().");
-		int unresolvedPingLimit = 6;
-		
-		BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
-		PrintWriter writer = new PrintWriter(s.getOutputStream());
-		
-		int unresolvedPings = 0;
 		boolean loop = true;
-		while (loop) {
-				try {
-						while (reader.ready()) {
-								String line = reader.readLine();
-								Logger.log("Received \"" + line + "\"");
-								StringTokenizer st = new StringTokenizer(line);
-								switch (st.nextToken()) {
-										case Flags.server_terminating:
-												loop = false;
-												isRunning = false;
-												break;
-										case Flags.all_backup_servers:
-												setBackupServers(line);
-												break;
-										case Flags.new_backup_server:
-												addBackupServer(line);
-												break;
-										case Flags.ping:
-												write(Flags.ping_response);
-												break;
-										case Flags.ping_response:
-												unresolvedPings--;
-												break;
-										case Flags.new_client:
-												//queueToUser.offer(s);
-												break;
-										default:
-												queueToUser.offer(line);
-												break;
-								}
-						}
+		
+		while (reader.ready()) {
+				String line = reader.readLine();
+				Logger.log("Received \"" + line + "\"");
+				StringTokenizer st = new StringTokenizer(line);
+				
+				switch (st.nextToken()) {
+						case Flags.server_terminating:
+								loop = false;
+								isRunning = false;
+								break;
+						case Flags.all_backup_servers:
+								setBackupServers(line);
+								break;
+						case Flags.new_backup_server:
+								addBackupServer(line);
+								break;
+						case Flags.ping:
+								write(Flags.ping_response);
+								break;
+						case Flags.ping_response:
+								unresolvedPings--;
+								break;
+						case Flags.new_client:
+								write(Flags.client_list);
+								break;
+						case Flags.client_list:
 						
-						// TODO Move pinging somewhere else, this is supposed to only be listening.
-						write(Flags.ping);
-						unresolvedPings++;
-						
-						while (!queueFromUser.isEmpty()) {
-								String msg = queueFromUser.poll();
-								Logger.log("Sending \"" + msg + "\"");
-								writer.println(msg);
-								writer.flush();
-						}
-						
-						Thread.sleep(100);
-				} catch (InterruptedException pE) {
-						Logger.log("Interrupted!");
-				}
-				if (unresolvedPings >= unresolvedPingLimit) {
-						Logger.log(unresolvedPingLimit + " or more unresolved pings.");
-						loop = false;
+						default:
+								queueToUser.offer(line);
+								break;
 				}
 		}
-		Logger.log("Stopping listen().");
+		return loop;
 }
 
 private void addBackupServer(String pNewBackupServer) {
