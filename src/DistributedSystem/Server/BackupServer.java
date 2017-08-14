@@ -34,13 +34,16 @@ import java.util.StringTokenizer;
  */
 public class BackupServer implements Runnable {
 
-public Server newMainServer = null;
 //<editor-fold desc="FieldVariables">
+public Server newMainServer = null;
+int unresolvedPings = 0;
+int unresolvedPingLimit = 4;
 private Address mainServerAddress;
 private int backupPort;
-private ArrayList<Address> backupServers = new ArrayList<>();
-private boolean isRunning = true;
 private int id;
+private ArrayList<Address> backupServers = new ArrayList<>();
+
+private boolean isRunning = true;
 //</editor-fold>
 
 //<editor-fold desc="Constructors">
@@ -49,10 +52,6 @@ public BackupServer(Address pMainServerAddress, int pBackupPort) {
 		mainServerAddress = pMainServerAddress;
 		backupPort = pBackupPort;
 }
-
-//</editor-fold>
-
-//<editor-fold desc="GettersAndSetters">
 
 //</editor-fold>
 
@@ -67,7 +66,6 @@ public void run() {
 					 BufferedReader reader = new BufferedReader(
 						 new InputStreamReader(s.getInputStream()));
 					 PrintWriter writer = new PrintWriter(s.getOutputStream())) {
-						
 						backupPort = s.getLocalPort();
 						
 						Logger.log("Connected to " + s.toString());
@@ -118,9 +116,8 @@ public void terminate() {
 //<editor-fold desc="PrivateMethods">
 private void waitLoop(BufferedReader pReader, PrintWriter pWriter) {
 		
-		int unresolvedPingLimit = 4;
 		Logger.log("Entering waitLoop().");
-		int unresolvedPings = 0;
+		
 		boolean loop = true;
 		while (loop) {
 				try {
@@ -129,31 +126,7 @@ private void waitLoop(BufferedReader pReader, PrintWriter pWriter) {
 						unresolvedPings++;
 						
 						while (pReader.ready()) {
-								String s = pReader.readLine();
-								StringTokenizer st = new StringTokenizer(s);
-								switch (st.nextToken()) {
-										case Flags.ping_response:
-												unresolvedPings--;
-												break;
-										case Flags.server_terminating:
-												Logger.log(Flags.server_terminating + " received.");
-												loop = false;
-												isRunning = false;
-												break;
-										case Flags.ping:
-												pWriter.println(Flags.ping_response);
-												break;
-										case Flags.new_backup_server:
-												addBackupServer(s);
-												break;
-										case Flags.all_backup_servers:
-												setBackupServers(s);
-												break;
-										case Flags.id:
-												id = Integer.parseInt(st.nextToken());
-												Logger.log("My ID: " + id);
-												break;
-								}
+								loop = protocol(pReader, pWriter);
 						}
 						
 						Thread.sleep(100);
@@ -169,6 +142,39 @@ private void waitLoop(BufferedReader pReader, PrintWriter pWriter) {
 				}
 		}
 		Logger.log("Exiting waitLoop().");
+}
+
+private boolean protocol(BufferedReader reader, PrintWriter writer) throws IOException {
+		
+		boolean loop = true;
+		
+		String s = reader.readLine();
+		StringTokenizer st = new StringTokenizer(s);
+		switch (st.nextToken()) {
+				case Flags.ping_response:
+						unresolvedPings--;
+						break;
+				case Flags.server_terminating:
+						Logger.log(Flags.server_terminating + " received.");
+						loop = false;
+						isRunning = false;
+						break;
+				case Flags.ping:
+						writer.println(Flags.ping_response);
+						break;
+				case Flags.new_backup_server:
+						addBackupServer(s);
+						break;
+				case Flags.all_backup_servers:
+						setBackupServers(s);
+						break;
+				case Flags.id:
+						id = Integer.parseInt(st.nextToken());
+						Logger.log("My ID: " + id);
+						break;
+		}
+		
+		return loop;
 }
 
 private void addBackupServer(String pNewBackupServer) {

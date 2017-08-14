@@ -58,7 +58,17 @@ public Client(String host, int port) {
 //</editor-fold>
 
 //<editor-fold desc="GettersAndSetters">
+public int getId() {
+		return id;
+}
 
+public String getHost() {
+		return host;
+}
+
+public int getPort() {
+		return port;
+}
 //</editor-fold>
 
 //<editor-fold desc="PublicMethods">
@@ -108,6 +118,8 @@ public boolean isDisconnected() {
 public boolean isClosed() {
 		return !isRunning;
 }
+
+
 
 @Override
 public String toString() {
