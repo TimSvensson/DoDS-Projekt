@@ -124,8 +124,12 @@ public class Game implements Runnable {
 
         server = new Server(port);
         client = new Client(host, port);
-
-        server.setup();
+    
+        try {
+            server.setup();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         client.setup();
 
     }

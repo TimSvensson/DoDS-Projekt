@@ -40,13 +40,15 @@ private boolean terminate = false;
 
 private ServerSocket serverSocket;
 private int port;
+private int socketTimeout = 100;
 
-private List<Connection> clients = Collections.synchronizedList(new ArrayList<Connection>());
-private List<Connection> backupServers = Collections.synchronizedList(new ArrayList<Connection>());
+private LinkedBlockingQueue<Connection> clients = new LinkedBlockingQueue<>();
+private LinkedBlockingQueue<Connection> backupServers = new LinkedBlockingQueue<>();
 
 private LinkedBlockingQueue<String> echoQueue = new LinkedBlockingQueue<>();
 private Thread echoThread;
 
+// Not to be accessed through other means than the method this.getNextClient().
 private int nextID = 0;
 //</editor-fold>
 
@@ -54,25 +56,17 @@ private int nextID = 0;
 
 // TODO Add constructor with no port
 
-public Server(int pPortNumber) {
-		port = pPortNumber;
+public Server(int port) {
+		this.port = port;
 }
 
 //</editor-fold>
 
-
-
 //<editor-fold desc="PublicMethods">
-public void setup() {
+public void setup() throws IOException {
 		
-		try {
-				serverSocket = new ServerSocket(port);
-				serverSocket.setSoTimeout(100);
-		} catch (SocketException e) {
-				e.printStackTrace();
-		} catch (IOException e) {
-				e.printStackTrace();
-		}
+		serverSocket = new ServerSocket(port);
+		serverSocket.setSoTimeout(socketTimeout);
 		
 		Thread t = new Thread(this, "server@" + port);
 		t.setDaemon(true);
@@ -89,6 +83,7 @@ public void run() {
 public void terminate() {
 		Logger.log("Terminating server.");
 		terminate = true;
+		echo(Flags.server_terminating);
 }
 
 public boolean isTerminated() {
@@ -96,8 +91,8 @@ public boolean isTerminated() {
 }
 
 // This will shut down the server incorrectly
-public void stop() {
-		int sleepTime = 4000;
+public void crash() {
+		int sleepTime = 1000;
 		closeAllConnections();
 		closeServerEcho();
 		clients = null;
@@ -126,13 +121,6 @@ private void mainServerSetup() {
 				while (!terminate) {
 						waitForConnection(serverSocket);
 				}
-				echo(Flags.server_terminating);
-				
-				try {
-						Thread.sleep(100);
-				} catch (InterruptedException pE) {
-						pE.printStackTrace();
-				}
 				
 				Logger.log("Closing ServerSocket.");
 				serverSocket.close();
@@ -148,22 +136,24 @@ private void mainServerSetup() {
 		}
 }
 
-private void waitForConnection(ServerSocket pLSS) throws IOException {
+private void waitForConnection(ServerSocket lss) throws IOException {
 		try {
 				//Logger.log("Waiting for new connection.");
-				Connection connection = new Connection(pLSS.accept(), getNextClientID());
+				Connection connection = new Connection(lss.accept(), getNextClientID());
 				
+				Logger.log("New connection: " + connection.socket.toString());
 				String connectionType = connection.read();
 				Logger.log("New connection of type \'" + connectionType + "\'.");
-				String serverDockName;
+				String newThreadName;
+				
 				if (connectionType.equals(Flags.client)) {
 						clients.add(connection);
 						//echo(Flags.new_client + " " + connection.toString());
-						serverDockName = "ClientDock@" + port + "-" + connection.getPort();
+						newThreadName = "ClientDock@" + port + "-" + connection.getPort();
 				} else if (connectionType.equals(Flags.server_backup)) {
 						backupServers.add(connection);
 						//echo(Flags.new_backup_server + " " + connection.toString());
-						serverDockName = "BackupDock@" + port + "-" + connection.getPort();
+						newThreadName = "BackupDock@" + port + "-" + connection.getPort();
 				} else {
 						// Error has occurred
 						Logger.log("Unable to identify connection.");
@@ -172,16 +162,16 @@ private void waitForConnection(ServerSocket pLSS) throws IOException {
 				}
 				
 				ServerDock serverDock = new ServerDock(connection);
-				Thread t = new Thread(serverDock, serverDockName);
+				Thread t = new Thread(serverDock, newThreadName);
 				t.setDaemon(true);
 				t.start();
 				
-		} catch (SocketTimeoutException pE) {
+		} catch (SocketTimeoutException e) {
 				//Logger.log("Socket timeout.");
 		}
 }
 
-private synchronized void echo(String s) {
+private void echo(String s) {
 		echoQueue.offer(s);
 }
 
@@ -227,86 +217,77 @@ private void closeServerEcho() {
 		echoThread = null;
 }
 
-private String getBackupList() {
-		String backupLists = Flags.new_backup_server;
-		synchronized(backupServers) {
-				Iterator<Connection> iterator = backupServers.iterator();
-				while (iterator.hasNext()) {
-						Connection c = iterator.next();
-						backupLists = backupLists + " " + c.toString();
-				}
-		}
-		return backupLists;
-}
-
-private int getNextClientID() {
-		int tmp = nextID;
-		nextID++;
-		return tmp;
-		
-}
-
-private String getAll(List<Connection> l) {
-		String s = "";
-		for (Connection c : l) {
-				s = s + " " + c.toString();
-		}
-		return s;
-}
-
 //</editor-fold>
 
 //<editor-fold desc="GettersAndSetters">
 
 public String getAllClients() {
-		return getAll(clients);
+		return getAllConnections(clients);
 }
 
-public String getAllBackupservers() {
-		return getAll(backupServers);
+public String getAllBackupServers() {
+		return getAllConnections(backupServers);
+}
+
+private String getAllConnections(LinkedBlockingQueue<Connection> l) {
+		String s = "";
+		for (Connection c : l) {
+				if (s.isEmpty()) {
+						s = c.toString();
+				} else {
+						s = s + " " + c.toString();
+				}
+		}
+		return s;
+}
+
+private int getNextClientID() {
+		int id = nextID;
+		nextID++;
+		return id;
 }
 
 //</editor-fold>
 
 //<editor-fold desc="Inner Classes">
 private class Connection {
-		private Socket fSocket;
-		private PrintWriter fWriter;
-		private BufferedReader fReader;
-		private final int fID;
+		private final int id;
+		private Socket socket;
+		private PrintWriter writer;
+		private BufferedReader reader;
 		
 		public Connection(Socket pSocket, int pId) throws IOException {
-				fID = pId;
-				fSocket = pSocket;
-				fWriter = new PrintWriter(pSocket.getOutputStream());
-				fReader = new BufferedReader(new InputStreamReader(pSocket.getInputStream()));
+				id = pId;
+				socket = pSocket;
+				writer = new PrintWriter(pSocket.getOutputStream());
+				reader = new BufferedReader(new InputStreamReader(pSocket.getInputStream()));
 		}
 		
 		public void write(String s) {
-				fWriter.println(s);
-				fWriter.flush();
+				writer.println(s);
+				writer.flush();
 		}
 		
 		public String read() throws IOException {
-				return fReader.readLine();
+				return reader.readLine();
 		}
 		
 		public void close() throws IOException {
-				fWriter.close();
-				fReader.close();
-				fSocket.close();
+				writer.close();
+				reader.close();
+				socket.close();
 		}
 		
 		public int getPort() {
-				return fSocket.getPort();
+				return socket.getPort();
 		}
 		
 		public String getHost() {
-				return fSocket.getInetAddress().getHostName();
+				return socket.getInetAddress().getHostName();
 		}
 		
 		public int getID() {
-				return fID;
+				return id;
 		}
 		
 		@Override
@@ -317,10 +298,10 @@ private class Connection {
 
 private class ServerDock implements Runnable {
 		
-		private Connection fClient;
+		private Connection client;
 		
 		public ServerDock(Connection pClient) {
-				fClient = pClient;
+				client = pClient;
 		}
 		
 		@Override
@@ -330,18 +311,27 @@ private class ServerDock implements Runnable {
 				try {
 						Logger.log("Waiting for incoming messages.");
 						String s;
-						while ((s = fClient.read()) != null) {
+						while ((s = client.read()) != null) {
+								Logger.log("Received: " + s);
 								switch (s) {
 										case Flags.ping:
-												fClient.write(Flags.ping_response);
+												client.write(Flags.ping_response);
 												break;
 										case Flags.all_backup_servers:
-												fClient.write(getBackupList());
+												client.write(Flags.all_backup_servers + " " +
+															 getAllBackupServers());
 												break;
 										case Flags.id:
-												fClient.write(Flags.id + fClient.getID());
+												client.write(Flags.id + " " + client.getID());
 												break;
 										case Flags.client:
+												break;
+										case Flags.client_list:
+												client.write(
+													Flags.client_list + " " + getAllClients());
+												break;
+										case Flags.disconnect:
+												//TODO remove client from list
 												break;
 										default:
 												echo(s);
@@ -357,7 +347,7 @@ private class ServerDock implements Runnable {
 		
 		@Override
 		public String toString() {
-				return fClient.getHost() + " " + fClient.getPort();
+				return client.getHost() + " " + client.getPort();
 		}
 }
 
@@ -382,17 +372,11 @@ private class ServerEcho implements Runnable {
 		
 		private void writeToAll(String s) {
 				Logger.log("Echoing \"" + s + "\"");
-				synchronized(clients) {
-						Iterator<Connection> iterator = clients.iterator();
-						while (iterator.hasNext()) {
-								iterator.next().write(s);
-						}
+				for (Connection c : clients) {
+						c.write(s);
 				}
-				synchronized(backupServers) {
-						Iterator<Connection> iterator = backupServers.iterator();
-						while (iterator.hasNext()) {
-								iterator.next().write(s);
-						}
+				for (Connection c : backupServers) {
+						c.write(s);
 				}
 		}
 }

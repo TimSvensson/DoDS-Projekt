@@ -10,6 +10,7 @@
 package DistributedSystem.Client;
 
 import DistributedSystem.Address;
+import DistributedSystem.DSUtil;
 import DistributedSystem.Flags;
 import DistributedSystem.Logger;
 
@@ -41,9 +42,9 @@ private String host;
 private int port;
 private int id;
 
-int unresolvedPings = 0;
-int unresolvedPingLimit = 6;
-int sleepTime = 100;
+private int unresolvedPings = 0;
+private int unresolvedPingLimit = 6;
+private int sleepTime = 100;
 
 private LinkedBlockingQueue<String> queueToUser = new LinkedBlockingQueue<>();
 private LinkedBlockingQueue<String> queueToServer = new LinkedBlockingQueue<>();
@@ -80,6 +81,7 @@ public String getHost() {
 public int getPort() {
 		return port;
 }
+
 //</editor-fold>
 
 //<editor-fold desc="PublicMethods">
@@ -95,9 +97,6 @@ public void run() {
  * Creates a new thread for this class, makes it a daemon thread, and calls it's run() method.
  */
 public void setup() {
-		write(Flags.client);
-		write(Flags.all_backup_servers);
-		
 		Thread t = new Thread(this);
 		t.setName("Client-" + t.getId());
 		t.setDaemon(true);
@@ -130,18 +129,19 @@ public boolean isDisconnected() {
 public boolean isClosed() {
 		return !isRunning;
 }
+//</editor-fold>
 
 @Override
 public String toString() {
 		String s = "%s %i %i", host, port, id;
 		return s;
 }
-//</editor-fold>
 
 //<editor-fold desc="PrivateMethods">
 private void clientLoop(String host, int port) {
 		while (isRunning) {
 				// Connect to the server.
+				isDisconnected = false;
 				connect(host, port);
 				isDisconnected = true;
 				
@@ -163,32 +163,42 @@ private void clientLoop(String host, int port) {
 						Logger.log("Using backup server: " + backupServers.get(0).toString());
 						backupServers.remove(0);
 						
-						write(Flags.client);
-						write(Flags.all_backup_servers);
+						try {
+								Thread.sleep(100);
+						} catch (InterruptedException e) {
+								e.printStackTrace();
+						}
 				}
 		}
 }
 
+private void initConnection(PrintWriter writer) {
+		writer.println(Flags.client);
+		writer.println(Flags.all_backup_servers);
+		writer.flush();
+}
+
 private void connect(String host, int port) {
 		Logger.log("Connecting to " + host + " " + port);
+		unresolvedPings = 0;
 		
-		try (Socket s = new Socket(host, port);
-			 BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
-			 PrintWriter writer = new PrintWriter(s.getOutputStream())) {
+		try (Socket s = new Socket(host, port); BufferedReader reader = new BufferedReader(
+			new InputStreamReader(s.getInputStream())); PrintWriter writer = new PrintWriter(
+			s.getOutputStream())) {
 				
-				Logger.log("Client connected to " + host + " " + port + ".");
-				isDisconnected = false;
+				Logger.log("Client connected to " + s.toString() + ".");
+				initConnection(writer);
 				
 				while (true) {
 						try {
-								if (!readProtocol(reader)) {
+								if (!listen(reader)) {
 										break;
 								}
 								
+								writeToServer(writer);
+								
 								write(Flags.ping);
 								unresolvedPings++;
-								
-								writeToServer(writer);
 								
 								Thread.sleep(sleepTime);
 						} catch (InterruptedException e) {
@@ -214,7 +224,7 @@ private void writeToServer(PrintWriter writer) {
 		}
 }
 
-private boolean readProtocol(BufferedReader reader) throws IOException {
+private boolean listen(BufferedReader reader) throws IOException {
 		
 		boolean loop = true;
 		
@@ -223,7 +233,17 @@ private boolean readProtocol(BufferedReader reader) throws IOException {
 				Logger.log("Received \"" + line + "\"");
 				StringTokenizer st = new StringTokenizer(line);
 				
-				switch (st.nextToken()) {
+				if (!st.hasMoreTokens()) {
+						continue;
+				}
+				
+				String token = st.nextToken();
+				if (!token.startsWith(Flags.prefix)) {
+						queueToUser.offer(line);
+						continue;
+				}
+				
+				switch (token) {
 						case Flags.server_terminating:
 								loop = false;
 								isRunning = false;
@@ -244,44 +264,27 @@ private boolean readProtocol(BufferedReader reader) throws IOException {
 								write(Flags.client_list);
 								break;
 						case Flags.client_list:
-						
-						default:
-								queueToUser.offer(line);
+								
 								break;
+						default:
+								Logger.log("Unknown flag: " + token);
 				}
 		}
 		return loop;
 }
 
-private void addBackupServer(String pNewBackupServer) {
-		StringTokenizer st = new StringTokenizer(pNewBackupServer);
-		if (!Flags.new_backup_server.equals(st.nextToken())) {
-				return;
+private void addBackupServer(String s) {
+		ArrayList<Address> a = DSUtil.getListOfBackupServers(s);
+		if (a != null) {
+				backupServers.addAll(a);
 		}
-		if (backupServers == null) {
-				backupServers = new ArrayList<>();
-		}
-		while (st.hasMoreTokens()) {
-				backupServers.add(createAddress(st));
-		}
-		String log = "";
-		for (Address a : backupServers) {
-				log += " " + a.toString();
-		}
-		Logger.log("Backup servers: " + log);
-}
-
-private void setBackupServers(String pList) {
-		backupServers = new ArrayList<>();
-		addBackupServer(pList);
-}
-
-private Address createAddress(StringTokenizer st) {
-		String host = st.nextToken();
-		int port = Integer.parseInt(st.nextToken());
-		int id = Integer.parseInt(st.nextToken());
 		
-		return new Address(host, port, id);
+		Logger.log("Backups: " + DSUtil.listToString(backupServers));
+}
+
+private void setBackupServers(String s) {
+		backupServers = DSUtil.getListOfBackupServers(s);
+		Logger.log("Backups: " + DSUtil.listToString(backupServers));
 }
 //</editor-fold>
 }

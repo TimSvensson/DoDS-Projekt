@@ -21,17 +21,19 @@ package DistributedSystem;
  */
 public class Flags {
 
-public static final String client = "##client";
-public static final String new_client = "##new_client";
-public static final String server_main = "##server_main";
-public static final String server_backup = "##server_backup";
-public static final String ping = "##ping";
-public static final String ping_response = "##ping_response";
-public static final String server_terminating = "##server_terminating";
-public static final String disconnect = "##disconnect";
-public static final String new_backup_server = "##new_backup_server";
-public static final String all_backup_servers = "##all_backup_servers";
-public static final String id = "##id";
-public static final String client_list = "##client_list";
+public static final String prefix = "##";
+
+public static final String client = prefix + "client";
+public static final String new_client = prefix + "new_client";
+public static final String server_main = prefix + "server_main";
+public static final String server_backup = prefix + "server_backup";
+public static final String ping = prefix + "ping";
+public static final String ping_response = prefix + "ping_response";
+public static final String server_terminating = prefix + "server_terminating";
+public static final String disconnect = prefix + "disconnect";
+public static final String new_backup_server = prefix + "new_backup_server";
+public static final String all_backup_servers = prefix + "all_backup_servers";
+public static final String id = prefix + "id";
+public static final String client_list = prefix + "client_list";
 
 }

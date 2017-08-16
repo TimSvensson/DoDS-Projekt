@@ -13,6 +13,7 @@ import DistributedSystem.Client.Client;
 import DistributedSystem.Server.BackupServer;
 import DistributedSystem.Server.Server;
 
+import java.io.IOException;
 import java.util.Collections;
 
 /**
@@ -126,7 +127,11 @@ private boolean oneClientEchoTest() {
 		Server server = new Server(port);
 		Client c1 = new Client(host, port);
 		
-		server.setup();
+		try {
+				server.setup();
+		} catch (IOException e) {
+				e.printStackTrace();
+		}
 		c1.setup();
 		
 		String shout1 = "shout1";
@@ -157,7 +162,11 @@ private boolean twoClientEchoTest() {
 		int port = 9002;
 		
 		Server s = new Server(port);
-		s.setup();
+		try {
+				s.setup();
+		} catch (IOException e) {
+				e.printStackTrace();
+		}
 		
 		Client shout = new Client(host, port);
 		Client echo = new Client(host, port);
@@ -180,8 +189,12 @@ private boolean twoClientEchoTest() {
 		}
 		
 		// Check that echo received the strings in correct order
-		if (!(echo.read().equals(s1) && echo.read().equals(s2) && echo.read().equals(s3)
-		)) {
+		String eResp1 = echo.read();
+		String eResp2 = echo.read();
+		String eResp3 = echo.read();
+		
+		Logger.log("TEST: Echo received: " + eResp1 + " " + eResp2 + " " + eResp3);
+		if (!(eResp1.equals(s1) && eResp2.equals(s2) && eResp3.equals(s3))) {
 				Logger.log("Client echo read wrong.");
 				result = false;
 		}
@@ -197,7 +210,11 @@ private boolean clientDisconnectTest() {
 		int port = 9003;
 		
 		Server server = new Server(port);
-		server.setup();
+		try {
+				server.setup();
+		} catch (IOException e) {
+				e.printStackTrace();
+		}
 		
 		Client c1 = new Client(host, port);
 		Client c2 = new Client(host, port);
@@ -207,7 +224,6 @@ private boolean clientDisconnectTest() {
 		c2.setup();
 		c3.setup();
 		
-
 		String s1 = "Shout one";
 		c3.write(s1);
 		
@@ -227,7 +243,8 @@ private boolean clientDisconnectTest() {
 		}
 		
 		server.terminate();
-		
+		c2.disconnect();
+		c3.disconnect();
 		
 		return true;
 }
@@ -240,7 +257,11 @@ private boolean serverTerminationTest() {
 		Client c2 = new Client(host, port);
 		
 		Server server = new Server(port);
-		server.setup();
+		try {
+				server.setup();
+		} catch (IOException e) {
+				e.printStackTrace();
+		}
 		
 		c1.setup();
 		c2.setup();
@@ -252,19 +273,24 @@ private boolean serverTerminationTest() {
 		String c2Echo = c2.read();
 		
 		if (!(test.equals(c1Echo) && test.equals(c2Echo))) {
-				Logger.log("Sanity check failed.");
+				Logger.log("TEST: Sanity check failed.");
 				return false;
 		}
 		
 		server.terminate();
+		try {
+				Thread.sleep(200);
+		} catch (InterruptedException e) {
+				e.printStackTrace();
+		}
 		
 		if (!(c1.isDisconnected() && c2.isDisconnected())) {
-				Logger.log("c1 or c2 has not disconnected properly.");
+				Logger.log("TEST: c1 or c2 has not disconnected properly.");
 				return false;
 		}
 		
 		if (!server.isTerminated()) {
-				Logger.log("Server has not terminated.");
+				Logger.log("TEST: Server has not terminated.");
 				return false;
 		}
 		
@@ -273,8 +299,10 @@ private boolean serverTerminationTest() {
 
 private boolean backupServerTest() {
 		boolean result = false;
+		
 		//TODO When a Server crashes, a Backup Server takes over.
 		//TODO Check that Clients can communicate.
+		
 		String host = "localhost";
 		int port = 9005;
 		int bsPort1 = 9006;
@@ -282,14 +310,18 @@ private boolean backupServerTest() {
 		
 		Server ms = new Server(port);
 		BackupServer bs1 = new BackupServer(new Address(host, port, -1), bsPort1);
-		BackupServer bs2 = new BackupServer(new Address(host, port, -1), bsPort2);
+		//BackupServer bs2 = new BackupServer(new Address(host, port, -1), bsPort2);
 		
 		Client c1 = new Client(host, port);
 		Client c2 = new Client(host, port);
 		
-		ms.setup();
+		try {
+				ms.setup();
+		} catch (IOException e) {
+				e.printStackTrace();
+		}
 		bs1.setup();
-		bs2.setup();
+		//bs2.setup();
 		
 		c1.setup();
 		c2.setup();
@@ -306,7 +338,13 @@ private boolean backupServerTest() {
 		
 		// Crashes the main server
 		Logger.log("TEST: Stopping main server.");
-		ms.stop();
+		ms.crash();
+		
+		try {
+				Thread.sleep(100);
+		} catch (InterruptedException e) {
+				e.printStackTrace();
+		}
 		
 		// TODO Check to see if backupServer takes over
 		
@@ -328,7 +366,7 @@ private boolean backupServerTest() {
 		ms.terminate();
 		bs1.newMainServer.terminate();
 		bs1.terminate();
-		bs2.terminate();
+		//bs2.terminate();
 		
 		return result;
 }

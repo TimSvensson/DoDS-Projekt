@@ -12,6 +12,7 @@ package DistributedSystem.Server;
 import DistributedSystem.Address;
 import DistributedSystem.Flags;
 import DistributedSystem.Logger;
+import DistributedSystem.DSUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -73,6 +74,7 @@ public void run() {
 						// Tell the main server who I am
 						writer.println(Flags.server_backup);
 						
+						// Request id from Server
 						writer.println(Flags.id);
 						
 						// Request and save the list of backup server
@@ -81,21 +83,35 @@ public void run() {
 						
 						waitLoop(reader, writer);
 						
-				} catch (UnknownHostException pE) {
-						pE.printStackTrace();
-				} catch (IOException pE) {
-						pE.printStackTrace();
+				} catch (UnknownHostException e) {
+						e.printStackTrace();
+				} catch (IOException e) {
+						Logger.log("IOException!");
 				}
 				
-				if (backupServers.isEmpty()) {
+				Logger.log("Checking for other backups...");
+				
+				if (backupServers == null || backupServers.isEmpty()) {
+						Logger.log("No backup servers.");
 						isRunning = false;
 				} else if (backupServers.get(0).getID() == id) {
+						Logger.log("Starting new main server!");
 						newMainServer = new Server(backupPort);
-						newMainServer.setup();
+						try {
+								newMainServer.setup();
+						} catch (IOException e) {
+								e.printStackTrace();
+						}
 						isRunning = false;
 				} else {
 						mainServerAddress = backupServers.get(0);
 						backupServers.remove(0);
+						Logger.log("Connecting to new main server: " + mainServerAddress);
+						try {
+								Thread.sleep(100);
+						} catch (InterruptedException e) {
+								e.printStackTrace();
+						}
 				}
 		}
 		Logger.log("Stopping.");
@@ -128,11 +144,12 @@ private void waitLoop(BufferedReader reader, PrintWriter writer) {
 						loop = protocol(reader, writer);
 						
 						Thread.sleep(100);
-				} catch (IOException pE) {
+				} catch (IOException e) {
 						Logger.log("IOException, main server is down.");
 						loop = false;
-				} catch (InterruptedException pE) {
+				} catch (InterruptedException e) {
 						Logger.log("InterruptedException.");
+						loop = false;
 				}
 				if (unresolvedPings >= unresolvedPingLimit) {
 						Logger.log(unresolvedPingLimit + " or more unresolved pings.");
@@ -147,25 +164,26 @@ private boolean protocol(BufferedReader reader, PrintWriter writer) throws IOExc
 		boolean loop = true;
 		
 		while (reader.ready()) {
-				String s = reader.readLine();
-				StringTokenizer st = new StringTokenizer(s);
+				String line = reader.readLine();
+				Logger.log("Line: " + line);
+				StringTokenizer st = new StringTokenizer(line);
 				switch (st.nextToken()) {
 						case Flags.ping_response:
 								unresolvedPings--;
 								break;
 						case Flags.server_terminating:
 								Logger.log(Flags.server_terminating + " received.");
+								terminate();
 								loop = false;
-								isRunning = false;
 								break;
 						case Flags.ping:
 								writer.println(Flags.ping_response);
 								break;
 						case Flags.new_backup_server:
-								addBackupServer(s);
+								addBackupServers(line);
 								break;
 						case Flags.all_backup_servers:
-								setBackupServers(s);
+								setBackupServers(line);
 								break;
 						case Flags.id:
 								id = Integer.parseInt(st.nextToken());
@@ -176,37 +194,21 @@ private boolean protocol(BufferedReader reader, PrintWriter writer) throws IOExc
 		return loop;
 }
 
-private void addBackupServer(String pNewBackupServer) {
-		StringTokenizer st = new StringTokenizer(pNewBackupServer);
-		if (!Flags.new_backup_server.equals(st.nextToken())) {
-				return;
-		}
-		if (backupServers == null) {
-				backupServers = new ArrayList<>();
-		}
-		while (st.hasMoreTokens()) {
-				backupServers.add(createAddress(st));
-		}
-		String log = "";
-		for (Address a : backupServers) {
-				log += " " + a.toString();
-		}
-		Logger.log("Backup servers: " + log);
-}
-
-private void setBackupServers(String pList) {
-		backupServers = new ArrayList<>();
-		addBackupServer(pList);
-}
-
-private Address createAddress(StringTokenizer st) {
-		String host = st.nextToken();
-		int port = Integer.parseInt(st.nextToken());
-		int id = Integer.parseInt(st.nextToken());
+private void setBackupServers(String list) {
+		backupServers = DSUtil.getListOfBackupServers(list);
 		
-		return new Address(host, port, id);
+		Logger.log("Backups: " + DSUtil.listToString(backupServers));
 }
 
+private void addBackupServers(String s) {
+		
+		ArrayList<Address> a = DSUtil.getListOfBackupServers(s);
+		if (a != null) {
+				backupServers.addAll(a);
+		}
+		
+		Logger.log("Backups: " + DSUtil.listToString(backupServers));
+}
 
 //</editor-fold>
 }
