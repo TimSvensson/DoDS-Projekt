@@ -41,14 +41,15 @@ public class Game implements Runnable {
         if (iAmHost()) createGame(host, port);
         else joinGame(host, port);
 
-        System.out.println("Waiting for the player caount to rise to " + totalPlayers + "...");
+        System.out.println("Waiting for the player count to rise to " + totalPlayers + "...");
         while (listOfClients.size() < totalPlayers) refreshListOfClients();
         System.out.println("We finally have " + totalPlayers + " players!! \n Game on bitches.");
 
         // Spel-loop
         while(true) {
             // TODO Hosten ska inte läsa från servern första gången
-            gameState = readFromServer();
+            if (isHost) isHost = false;
+            else gameState = readFromServer();
 
             // Update the graphical user interface with the current gamestate
             updateGUI(gameState);
@@ -176,8 +177,10 @@ public class Game implements Runnable {
     private void refreshListOfClients() {
         List<Address> addresses = client.getClients();
 
-        for (int i = 0; i < addresses.size() - 1; i++) {
-            listOfClients.putIfAbsent(i, addresses.get(i));
+        if (addresses != null) {
+            for (int i = 0; i < addresses.size() - 1; i++) {
+                listOfClients.putIfAbsent(i, addresses.get(i));
+            }
         }
     }
 }
