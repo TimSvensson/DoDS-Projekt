@@ -195,14 +195,14 @@ private boolean protocol(BufferedReader reader, PrintWriter writer) throws IOExc
 }
 
 private void setBackupServers(String list) {
-		backupServers = DSUtil.getListOfBackupServers(list);
+		backupServers = DSUtil.getListOfAddresses(list);
 		
 		Logger.log("Backups: " + DSUtil.listToString(backupServers));
 }
 
 private void addBackupServers(String s) {
 		
-		ArrayList<Address> a = DSUtil.getListOfBackupServers(s);
+		ArrayList<Address> a = DSUtil.getListOfAddresses(s);
 		if (a != null) {
 				backupServers.addAll(a);
 		}

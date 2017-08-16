@@ -25,7 +25,7 @@ import java.util.StringTokenizer;
  */
 public class DSUtil {
 
-public static ArrayList<Address> getListOfBackupServers(String s) {
+public static ArrayList<Address> getListOfAddresses(String s) {
 		
 		StringTokenizer st = new StringTokenizer(s);
 		String flag = st.nextToken();

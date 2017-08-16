@@ -17,6 +17,7 @@ import DistributedSystem.Logger;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -175,6 +176,7 @@ private void clientLoop(String host, int port) {
 private void initConnection(PrintWriter writer) {
 		writer.println(Flags.client);
 		writer.println(Flags.all_backup_servers);
+		writer.println(Flags.id);
 		writer.flush();
 }
 
@@ -249,10 +251,10 @@ private boolean listen(BufferedReader reader) throws IOException {
 								isRunning = false;
 								break;
 						case Flags.all_backup_servers:
-								setBackupServers(line);
+								backupServers = new ArrayList<>(setAddressList(line));
 								break;
 						case Flags.new_backup_server:
-								addBackupServer(line);
+								addAddressesToList(backupServers, line);
 								break;
 						case Flags.ping:
 								write(Flags.ping_response);
@@ -264,7 +266,10 @@ private boolean listen(BufferedReader reader) throws IOException {
 								write(Flags.client_list);
 								break;
 						case Flags.client_list:
-								
+								clients = new ArrayList<>(setAddressList(line));
+								break;
+						case Flags.id:
+								this.id = Integer.parseInt(st.nextToken());
 								break;
 						default:
 								Logger.log("Unknown flag: " + token);
@@ -273,18 +278,15 @@ private boolean listen(BufferedReader reader) throws IOException {
 		return loop;
 }
 
-private void addBackupServer(String s) {
-		ArrayList<Address> a = DSUtil.getListOfBackupServers(s);
+private void addAddressesToList(List<Address> l, String s) {
+		ArrayList<Address> a = DSUtil.getListOfAddresses(s);
 		if (a != null) {
-				backupServers.addAll(a);
+				l.addAll(a);
 		}
-		
-		Logger.log("Backups: " + DSUtil.listToString(backupServers));
 }
 
-private void setBackupServers(String s) {
-		backupServers = DSUtil.getListOfBackupServers(s);
-		Logger.log("Backups: " + DSUtil.listToString(backupServers));
+private List<Address> setAddressList(String s) {
+		return DSUtil.getListOfAddresses(s);
 }
 //</editor-fold>
 }
