@@ -71,15 +71,7 @@ public void run() {
 						
 						Logger.log("Connected to " + s.toString());
 						
-						// Tell the main server who I am
-						writer.println(Flags.server_backup);
-						
-						// Request id from Server
-						writer.println(Flags.id);
-						
-						// Request and save the list of backup server
-						writer.println(Flags.all_backup_servers);
-						writer.flush();
+						initConnection(writer);
 						
 						waitLoop(reader, writer);
 						
@@ -130,9 +122,22 @@ public void terminate() {
 //</editor-fold>
 
 //<editor-fold desc="PrivateMethods">
+private void initConnection(PrintWriter writer) {
+		// Tell the main server who I am
+		writer.println(Flags.server_backup);
+		
+		// Request id from Server
+		writer.println(Flags.id);
+		
+		// Request and save the list of backup server
+		writer.println(Flags.all_backup_servers);
+		writer.flush();
+}
+
 private void waitLoop(BufferedReader reader, PrintWriter writer) {
 		
 		Logger.log("Entering waitLoop().");
+		unresolvedPings = 0;
 		
 		boolean loop = true;
 		while (loop) {

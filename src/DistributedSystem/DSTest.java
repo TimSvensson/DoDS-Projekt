@@ -310,7 +310,7 @@ private boolean backupServerTest() {
 		
 		Server ms = new Server(port);
 		BackupServer bs1 = new BackupServer(new Address(host, port, -1), bsPort1);
-		//BackupServer bs2 = new BackupServer(new Address(host, port, -1), bsPort2);
+		BackupServer bs2 = new BackupServer(new Address(host, port, -1), bsPort2);
 		
 		Client c1 = new Client(host, port);
 		Client c2 = new Client(host, port);
@@ -321,7 +321,7 @@ private boolean backupServerTest() {
 				e.printStackTrace();
 		}
 		bs1.setup();
-		//bs2.setup();
+		bs2.setup();
 		
 		c1.setup();
 		c2.setup();
@@ -366,7 +366,7 @@ private boolean backupServerTest() {
 		ms.terminate();
 		bs1.newMainServer.terminate();
 		bs1.terminate();
-		//bs2.terminate();
+		bs2.terminate();
 		
 		return result;
 }
