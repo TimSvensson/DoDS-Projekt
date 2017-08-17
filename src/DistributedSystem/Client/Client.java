@@ -51,7 +51,7 @@ private LinkedBlockingQueue<String> queueToUser = new LinkedBlockingQueue<>();
 private LinkedBlockingQueue<String> queueToServer = new LinkedBlockingQueue<>();
 
 private ArrayList<Address> backupServers;
-private ArrayList<Address> clients;
+private ArrayList<Address> clients = new ArrayList<>();
 //</editor-fold>
 
 //<editor-fold desc="Constructors">
@@ -175,8 +175,9 @@ private void clientLoop(String host, int port) {
 
 private void initConnection(PrintWriter writer) {
 		writer.println(Flags.client);
-		writer.println(Flags.all_backup_servers);
 		writer.println(Flags.id);
+		writer.println(Flags.all_backup_servers);
+		writer.println(Flags.client_list);
 		writer.flush();
 }
 
@@ -266,6 +267,7 @@ private boolean listen(BufferedReader reader) throws IOException {
 								write(Flags.client_list);
 								break;
 						case Flags.client_list:
+								System.out.println(line);
 								clients = new ArrayList<>(setAddressList(line));
 								break;
 						case Flags.id:

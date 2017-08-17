@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,13 +22,17 @@ public class Game implements Runnable {
     int port = 9000;
     Gson gsonParser = new Gson();
     int totalPlayers = 0;
-
     boolean isHost = false;
 
     /**
      * The Integer holds the turn of the players in the game, the Address hold the IP and ID of the corresponding clients
      */
     HashMap<Integer, Address> listOfClients = new HashMap<>();
+
+    /**
+     * The list of players
+     */
+    List<Player> listOfPlayers = new ArrayList<>();
 
     public Game() {}
 
@@ -36,8 +41,8 @@ public class Game implements Runnable {
         initGUI();
 
         // Check if a game-server already exists, if not then create and setup one, else join one
-        if (iAmHost()) createGame(host, port);
-        else joinGame(host, port);
+        if (iAmHost()) initGame();
+        else joinGame(host, port); // TODO Make host and port dynamic
 
         System.out.println("Waiting for the player count to rise to " + totalPlayers + "...");
         while (listOfClients.size() < totalPlayers) refreshListOfClients();
@@ -46,11 +51,15 @@ public class Game implements Runnable {
         // Spel-loop
         while(true) {
             // TODO Hosten ska inte läsa från servern första gången
-            if (isHost) isHost = false; // TODO måste gå att göra på ett bättre sätt -Tim
-            else gameState = readFromServer();
-
-            // Update the graphical user interface with the current gamestate
-            updateGUI(gameState);
+            if (isHost) {
+                isHost = false; // TODO måste gå att göra på ett bättre sätt -Tim
+                gameState = new Board(listOfPlayers);
+            }
+            else {
+                gameState = readFromServer();
+                // Update the graphical user interface with the current gamestate
+                updateGUI(gameState);
+            }
 
             if (isMyTurn()) {
                 play(gameState);
@@ -117,19 +126,15 @@ public class Game implements Runnable {
         return isHost;
     }
 
-    private void createGame(String host, int port) {
-        gameState = new Board(totalPlayers);
-
+    private void initGame() {
         server = new Server(port);
-        client = new Client(host, port);
-    
         try {
             server.setup();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        client.setup();
 
+        joinGame(host, port);
     }
 
     private void joinGame(String host, int port) {
@@ -145,9 +150,10 @@ public class Game implements Runnable {
         gameState = newGameState;
 
         Player previousPlayer = gameState.getPreviousPlayer();
+        Square currentSquare = gameState.getCurrentSquare();
         Square previousSquare = gameState.getPreviousSquare();
 
-        System.out.println("Player " + previousPlayer.getId() + " tossed " + gameState.getDice() + " and moved to " + previousSquare.getName());
+        System.out.println("Player " + previousPlayer.getId() + " tossed " + gameState.getDice().getTotal() + " and moved from " + previousSquare.getName() + " to " + currentSquare.getName());
 
     }
 
@@ -168,6 +174,25 @@ public class Game implements Runnable {
     }
 
     private void play(Board JSONgameState) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        System.out.println("Type 'Toss dice' to play your round");
+        boolean played = false;
+
+        while (!played) {
+            String input = null;
+            try {
+                input = reader.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (input.toLowerCase().equals("toss dice")) {
+                played = true;
+            }
+            else {
+                System.out.println("You had one job. Why did you join the game if you weren't going to play you fuckface?");
+            }
+        }
+
         gameState.movePlayer();
     }
 
@@ -179,10 +204,21 @@ public class Game implements Runnable {
     private void refreshListOfClients() {
         List<Address> addresses = client.getClients();
 
+        listOfClients = new HashMap<>();
+        listOfPlayers = new ArrayList<>();
+
         if (addresses != null) {
-            for (int i = 0; i < addresses.size() - 1; i++) {
-                listOfClients.putIfAbsent(i, addresses.get(i));
+            for (int i = 0; i < addresses.size(); i++) {
+                listOfClients.put(i, addresses.get(i));
+                listOfPlayers.add(new Player(i, "Player " + i, addresses.get(i).getID()));
+                System.out.println("Added " + i);
             }
         }
+
+        // Tillfälligt skit början
+        for (int i = 0; i < listOfClients.size(); i++) {
+            System.out.println(listOfClients.get(i));
+        }
+        // Tillfälligt skit slut
     }
 }

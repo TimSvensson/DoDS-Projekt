@@ -1,15 +1,17 @@
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by axelhellman on 2016-12-08.
  */
 public class Board {
     private Dice dice = new Dice();
-    private Player [] listOfPlayers; // TODO Förklara varför används arrayer och inte listor? -Tim
+    private List<Player> listOfPlayers = new ArrayList<>(); // TODO Förklara varför används arrayer och inte listor? -Tim
     String [] nameOfSquares = {
             "Street 1", "Street 2", "Street 3", "Street 4", "Street 5", "Street 6", "Street 7", "Street 8","Street 9", "Street 10",
             "Street 11", "Street 12", "Street 13", "Street 14", "Street 15", "Street 16", "Street 17", "Street 18","Street 19", "Street 20",
             "Street 21", "Street 22", "Street 23", "Street 24", "Street 25", "Street 26", "Street 27", "Street 28","Street 29", "Street 30",
-            "Street 31", "Street 32", "Street 33", "Street 34", "Street 35", "Street 36", "Street 37", "Street 38","Street 39", "Street 40"};
+            "Street 31", "Street 32", "Street 33", "Street 34", "Street 35", "Street 36", "Street 37", "Street 38","Street 39", "Street 40"}; // silvertejpskod. Fråga inte.
     private int totalPlayer = 0;
     private Deck deck_1;
     private Deck deck_2;
@@ -24,17 +26,15 @@ public class Board {
     private Square currentSquare;
     private Square previousSquare;
 
-    public Board(int totalPlayer) {
-        listOfPlayers = new Player[totalPlayer];
-        this.totalPlayer = totalPlayer;
-        for (int i = 0; i < listOfPlayers.length; i++) {
-            Player player = new Player(i, "Player " + (i + 1));
-            listOfPlayers[i] = player;
-        }
+    public Board(List<Player> listOfPlayers) {
+        this.listOfPlayers = listOfPlayers;
+        totalPlayer = listOfPlayers.size();
 
         for (int i = 0; i < nameOfSquares.length; i++) {
             listOfSquares[i] = new Square(nameOfSquares[i], i);
         }
+
+        currentSquare = previousSquare = listOfSquares[0];
     }
 
     public void movePlayer(){
@@ -97,33 +97,31 @@ public class Board {
     }
 
     public Player getPreviousPlayer() {
-        return listOfPlayers[previousTurn];
+        return listOfPlayers.get(previousTurn);
     }
 
     public void updateSquares(int currentPlayerPosition) {
         previousSquare = currentSquare;
 
-        for (Square listOfSquare : listOfSquares) {
-            if (listOfSquare.getPosition() == currentPlayerPosition) {
-                currentSquare = listOfSquare; // TODO Va? Haubir snälla förklara. -Tim
+        for (Square square : listOfSquares) {
+            if (square.getPosition() == currentPlayerPosition) {
+                currentSquare = square; // TODO Va? Haubir snälla förklara. -Tim
                 break;
             }
         }
     }
 
-    public Player[] getListOfPlayers() {
+    public List<Player> getListOfPlayers() {
         return listOfPlayers;
     }
 
     public Player getCurrentPlayer() {
-        return listOfPlayers[currentTurn];
+        return listOfPlayers.get(currentTurn);
     }
 
     public void nextTurn() {
         previousTurn = currentTurn;
-        // TODO crntTurn = (crntTurn + 1) % numPlayers -Tim
-        if (currentTurn < totalPlayer - 1) currentTurn++;
-        else currentTurn = 0;
+        currentTurn = (currentTurn + 1) % totalPlayer;
     }
 
     public Dice getDice() {

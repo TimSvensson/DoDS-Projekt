@@ -10,9 +10,10 @@ public class Player {
     String name;
     Money money = new Money(5000); //haha u poor bitch?
 
-    public Player(int turn, String name) {
+    public Player(int turn, String name, int id) {
         this.turn = turn;
         this.name = name;
+        this.id = id;
     }
 
     public int getTotalWalk(){
@@ -52,9 +53,10 @@ public class Player {
     }
 
     public int tossDie(Dice die){
+        die.roll();
         int die1 = die.getDie1();
         int die2 = die.getDie2();
-        System.out.println("Player " + getId() + " tossed die 1 and got: " + die1 + "\nPlayer " + getId() + " tossed die2 and got: "+ die2);
+        System.out.println("Player " + getId() + " tossed die 1 and got: " + die1 + "\nPlayer " + getId() + " tossed die 2 and got: "+ die2);
         return (die1 + die2);
     }
 }

@@ -29,10 +29,7 @@ public static ArrayList<Address> getListOfAddresses(String s) {
 		
 		StringTokenizer st = new StringTokenizer(s);
 		String flag = st.nextToken();
-		if (!flag.equals(Flags.all_backup_servers) &&
-			!flag.equals(Flags.new_backup_server)) {
-				return null;
-		}
+		Logger.log(flag);
 		
 		ArrayList<Address> list = new ArrayList<>();
 		while (st.hasMoreTokens()) {
