@@ -4,12 +4,10 @@ import DistributedSystem.Server.Server;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
-import java.io.Console;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * Created by axelhellman on 2016-12-08.
@@ -43,12 +41,12 @@ public class Game implements Runnable {
 
         System.out.println("Waiting for the player count to rise to " + totalPlayers + "...");
         while (listOfClients.size() < totalPlayers) refreshListOfClients();
-        System.out.println("We finally have " + totalPlayers + " players!! \n Game on bitches.");
+        System.out.println("We finally have " + totalPlayers + " players!!");
 
         // Spel-loop
         while(true) {
             // TODO Hosten ska inte läsa från servern första gången
-            if (isHost) isHost = false;
+            if (isHost) isHost = false; // TODO måste gå att göra på ett bättre sätt -Tim
             else gameState = readFromServer();
 
             // Update the graphical user interface with the current gamestate
@@ -63,7 +61,7 @@ public class Game implements Runnable {
                 sendToServer(gameState);
             }
 
-            if (gameIsOver()) break;
+            if (isGameOver()) break;
         }
 
         terminateClient();
@@ -86,7 +84,7 @@ public class Game implements Runnable {
                 break;
             }
             catch(NumberFormatException e) {
-                System.out.println("Quzalqort qahbabab, are you so dumb to think that " + ans + " is a number?!\n Try again sagi sagbab ba let nayem");
+                System.out.println("\"" + ans + "\" is not a number?!");
             }
         }
     }
@@ -112,7 +110,7 @@ public class Game implements Runnable {
                 break;
             }
             else {
-                System.out.println("Please answer yes or no, you vile product of generations of incest and goatfucking.");
+                System.out.println("Please answer yes or no.");
             }
         }
 
@@ -139,7 +137,7 @@ public class Game implements Runnable {
         client.setup();
     }
 
-    private boolean gameIsOver() {
+    private boolean isGameOver() {
         return client.isClosed();
     }
 

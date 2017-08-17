@@ -46,36 +46,38 @@ public void runTests() {
 		String resFormat = "%s %25s %10B";
 		int lengthOfBanner = 60;
 		
+		System.out.println("runTest(): Starting tests.");
+		
 		try {
 				int wait = 500;
 				
 				String t1 = "oneClientEchoTest";
-				Logger.log(getBanner(t1, lengthOfBanner));
-				Logger.log(String.format(resFormat, "RESULTS:", "oneClientEchoTest",
+				System.out.println(getBanner(t1, lengthOfBanner));
+				System.out.println(String.format(resFormat, "RESULTS:", "oneClientEchoTest",
 										 results[0] = oneClientEchoTest()));
 				Thread.sleep(wait);
 				
 				String t2 = "twoClientEchoTest";
-				Logger.log(getBanner(t2, lengthOfBanner));
-				Logger.log(String.format(resFormat, "RESULTS:", "twoClientEchoTest",
+				System.out.println(getBanner(t2, lengthOfBanner));
+				System.out.println(String.format(resFormat, "RESULTS:", "twoClientEchoTest",
 										 results[1] = twoClientEchoTest()));
 				Thread.sleep(wait);
 				
 				String t3 = "clientDisconnectTest";
-				Logger.log(getBanner(t3, lengthOfBanner));
-				Logger.log(String.format(resFormat, "RESULTS:", "clientDisconnectTest",
+				System.out.println(getBanner(t3, lengthOfBanner));
+				System.out.println(String.format(resFormat, "RESULTS:", "clientDisconnectTest",
 										 results[2] = clientDisconnectTest()));
 				Thread.sleep(wait);
 				
 				String t4 = "serverTerminationTest";
-				Logger.log(getBanner(t4, lengthOfBanner));
-				Logger.log(String.format(resFormat, "RESULTS:", "serverTerminationTest",
+				System.out.println(getBanner(t4, lengthOfBanner));
+				System.out.println(String.format(resFormat, "RESULTS:", "serverTerminationTest",
 										 results[3] = serverTerminationTest()));
 				Thread.sleep(wait);
 				
 				String t5 = "backupServerTest";
-				Logger.log(getBanner(t5, lengthOfBanner));
-				Logger.log(String.format(resFormat, "RESULTS:", "backupServerTest",
+				System.out.println(getBanner(t5, lengthOfBanner));
+				System.out.println(String.format(resFormat, "RESULTS:", "backupServerTest",
 										 results[4] = backupServerTest()));
 				
 				Thread.sleep(wait);
@@ -83,12 +85,14 @@ public void runTests() {
 				pE.printStackTrace();
 		}
 		
-		Logger.log(getBanner("RESULTS", lengthOfBanner));
-		Logger.log(String.format(resFormat, "RESULTS:", "oneClientEchoTest", results[0]));
-		Logger.log(String.format(resFormat, "RESULTS:", "twoClientEchoTest", results[1]));
-		Logger.log(String.format(resFormat, "RESULTS:", "clientDisconnectTest", results[2]));
-		Logger.log(String.format(resFormat, "RESULTS:", "serverTerminationTest", results[3]));
-		Logger.log(String.format(resFormat, "RESULTS:", "backupServerTest", results[4]));
+		System.out.println(getBanner("RESULTS", lengthOfBanner));
+		System.out.println(String.format(resFormat, "RESULTS:", "oneClientEchoTest", results[0]));
+		System.out.println(String.format(resFormat, "RESULTS:", "twoClientEchoTest", results[1]));
+		System.out.println(String.format(resFormat, "RESULTS:", "clientDisconnectTest", results[2]));
+		System.out.println(String.format(resFormat, "RESULTS:", "serverTerminationTest", results[3]));
+		System.out.println(String.format(resFormat, "RESULTS:", "backupServerTest", results[4]));
+		
+		System.out.println("runTest(): Tests done.");
 }
 //</editor-fold>
 

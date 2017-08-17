@@ -60,7 +60,7 @@ public static String listToString(List l) {
 		StringBuilder sb = new StringBuilder();
 		for (Object o : l) {
 				sb.append(o.toString());
-				sb.append("\t");
+				sb.append(" ");
 		}
 		return sb.toString();
 }

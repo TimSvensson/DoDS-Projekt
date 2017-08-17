@@ -229,15 +229,15 @@ public String getAllBackupServers() {
 }
 
 private String getAllConnections(LinkedBlockingQueue<Connection> l) {
-		String s = "";
-		for (Connection c : l) {
-				if (s.isEmpty()) {
-						s = c.toString();
-				} else {
-						s = s + " " + c.toString();
-				}
+		if (l == null) {
+				return null;
 		}
-		return s;
+		StringBuilder sb = new StringBuilder();
+		for (Object o : l) {
+				sb.append(o.toString());
+				sb.append(" ");
+		}
+		return sb.toString();
 }
 
 private int getNextClientID() {

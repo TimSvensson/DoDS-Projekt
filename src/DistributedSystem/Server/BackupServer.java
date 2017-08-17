@@ -81,7 +81,9 @@ public void run() {
 						Logger.log("IOException!");
 				}
 				
-				Logger.log("Checking for other backups...");
+				
+				Logger.log("Checking for backups...");
+				
 				
 				if (backupServers == null || backupServers.isEmpty()) {
 						Logger.log("No backup servers.");

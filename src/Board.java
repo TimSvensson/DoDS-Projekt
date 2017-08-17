@@ -4,7 +4,7 @@
  */
 public class Board {
     private Dice dice = new Dice();
-    private Player [] listOfPlayers;
+    private Player [] listOfPlayers; // TODO Förklara varför används arrayer och inte listor? -Tim
     String [] nameOfSquares = {
             "Street 1", "Street 2", "Street 3", "Street 4", "Street 5", "Street 6", "Street 7", "Street 8","Street 9", "Street 10",
             "Street 11", "Street 12", "Street 13", "Street 14", "Street 15", "Street 16", "Street 17", "Street 18","Street 19", "Street 20",
@@ -105,7 +105,7 @@ public class Board {
 
         for (Square listOfSquare : listOfSquares) {
             if (listOfSquare.getPosition() == currentPlayerPosition) {
-                currentSquare = listOfSquare;
+                currentSquare = listOfSquare; // TODO Va? Haubir snälla förklara. -Tim
                 break;
             }
         }
@@ -121,6 +121,7 @@ public class Board {
 
     public void nextTurn() {
         previousTurn = currentTurn;
+        // TODO crntTurn = (crntTurn + 1) % numPlayers -Tim
         if (currentTurn < totalPlayer - 1) currentTurn++;
         else currentTurn = 0;
     }
