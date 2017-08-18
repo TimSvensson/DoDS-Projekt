@@ -143,16 +143,23 @@ private void waitForConnection(ServerSocket lss) throws IOException {
 				Logger.log("New connection: " + connection.socket.toString());
 				String connectionType = connection.read();
 				Logger.log("New connection of type \'" + connectionType + "\'.");
-				String newThreadName;
 				
 				if (connectionType.equals(Flags.client)) {
+						
 						clients.add(connection);
-						//echo(Flags.new_client + " " + connection.toString());
-						newThreadName = "ClientDock@" + port + "-" + connection.getPort();
+						String threadName = "SD_Client_" + port + "-" + connection.getPort();
+						startNewServerDock(connection, threadName);
+						
+						echo(Flags.new_client);
+				
 				} else if (connectionType.equals(Flags.server_backup)) {
+						
 						backupServers.add(connection);
-						//echo(Flags.new_backup_server + " " + connection.toString());
-						newThreadName = "BackupDock@" + port + "-" + connection.getPort();
+						String threadName = "SD_Backup_" + port + "-" + connection.getPort();
+						startNewServerDock(connection, threadName);
+						
+						echo(Flags.new_backup_server + " " + connection.toString());
+				
 				} else {
 						// Error has occurred
 						Logger.log("Unable to identify connection.");
@@ -160,14 +167,16 @@ private void waitForConnection(ServerSocket lss) throws IOException {
 						return;
 				}
 				
-				ServerDock serverDock = new ServerDock(connection);
-				Thread t = new Thread(serverDock, newThreadName);
-				t.setDaemon(true);
-				t.start();
-				
 		} catch (SocketTimeoutException e) {
 				//Logger.log("Socket timeout.");
 		}
+}
+
+private void startNewServerDock(Connection connection, String threadName) {
+		ServerDock serverDock = new ServerDock(connection);
+		Thread t = new Thread(serverDock, threadName);
+		t.setDaemon(true);
+		t.start();
 }
 
 private void echo(String s) {

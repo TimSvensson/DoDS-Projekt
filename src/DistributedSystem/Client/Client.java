@@ -255,7 +255,7 @@ private boolean listen(BufferedReader reader) throws IOException {
 								backupServers = new ArrayList<>(setAddressList(line));
 								break;
 						case Flags.new_backup_server:
-								addAddressesToList(backupServers, line);
+								write(Flags.all_backup_servers);
 								break;
 						case Flags.ping:
 								write(Flags.ping_response);
