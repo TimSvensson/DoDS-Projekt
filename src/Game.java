@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Created by axelhellman on 2016-12-08.
@@ -23,6 +24,16 @@ public class Game implements Runnable {
     Gson gsonParser = new Gson();
     int totalPlayers = 0;
     boolean isHost = false;
+
+    private final String PREFIX = "%%";
+
+    // Identifier flags
+    private final String ALL_PLAYERS = PREFIX + "ALL_PLAYERS";
+
+    // Message flags
+    private final String GET_TOTAL_PLAYERS = PREFIX + "GET_TOTAL_PLAYERS";
+    private final String ENOUGH_PLAYERS = PREFIX + "ENOUGH_PLAYERS";
+    private final String CURRENT_AMOUNT_OF_PLAYERS = PREFIX  + "CURRENT_AMOUNT_OF_PLAYERS";
 
     /**
      * The Integer holds the turn of the players in the game, the Address hold the IP and ID of the corresponding clients
@@ -45,24 +56,18 @@ public class Game implements Runnable {
         else joinGame(host, port); // TODO Make host and port dynamic
 
         System.out.println("isHost = " + isHost);
-        if(!isHost) totalPlayers = listOfPlayers.size();
 
-        System.out.println("Waiting for the player count to rise to " + totalPlayers + "...");
-        while (listOfClients.size() < totalPlayers) refreshListOfClients();
+        if (isHost) setupGame();
+        else waitForGameToStart();
         System.out.println("We finally have " + totalPlayers + " players!!");
 
         // Spel-loop
         while(true) {
-            // TODO Hosten ska inte läsa från servern första gången
-            if (isHost) {
-                isHost = false; // TODO måste gå att göra på ett bättre sätt -Tim
-                gameState = new Board(listOfPlayers);
-            }
-            else {
-                gameState = readFromServer();
-                // Update the graphical user interface with the current gamestate
-                updateGUI(gameState);
-            }
+
+            gameState = readFromServer();
+
+            // Update the graphical user interface with the current gamestate
+            updateGUI(gameState);
 
             if (isMyTurn()) {
                 play(gameState);
@@ -76,6 +81,7 @@ public class Game implements Runnable {
             if (isGameOver()) break;
         }
 
+        if (isHost) server.terminate();
         terminateClient();
 
     }
@@ -154,6 +160,78 @@ public class Game implements Runnable {
 
         System.out.println("listOfClients.size(): " + listOfClients.size());
         System.out.println("listOfPlayers.size(): " + listOfPlayers.size());
+    }
+
+    private void setupGame() {
+        System.out.println("Waiting for the player count to rise to " + totalPlayers + "...");
+
+        while (listOfPlayers.size() < totalPlayers) {
+
+            refreshListOfClients();
+
+            if (!client.hasMessage()) continue;
+            String message = client.read();
+
+            StringTokenizer tokenizer = new StringTokenizer(message);
+            if (!tokenizer.hasMoreTokens()) continue;
+
+            String recipient = tokenizer.nextToken();
+            if (!(recipient.equals(ALL_PLAYERS) || recipient.equals(String.valueOf(client.getId())))) continue;
+
+            String sender = tokenizer.nextToken();
+            // TODO Extra: Lägg till check här för att se om avsändaren är med i address-listan (för säkerhet)
+
+            String content = tokenizer.nextToken();
+            switch (content) {
+                case GET_TOTAL_PLAYERS:
+                    client.write(createMessage(ALL_PLAYERS, CURRENT_AMOUNT_OF_PLAYERS + " " + String.valueOf(totalPlayers)));
+                    break;
+            }
+        }
+
+        client.write(createMessage(ALL_PLAYERS, ENOUGH_PLAYERS + " " + String.valueOf(totalPlayers)));
+        System.out.println("We finally have " + totalPlayers + " players!!");
+
+        // When all players have joined, the game is created
+        gameState = new Board(listOfPlayers);
+
+    }
+
+    /**
+     * Only for clients who join the game.
+     */
+    private void waitForGameToStart() {
+
+        while (true) {
+            client.write(createMessage(ALL_PLAYERS, GET_TOTAL_PLAYERS));
+
+            String message = client.read();
+
+            StringTokenizer tokenizer = new StringTokenizer(message);
+            if (!tokenizer.hasMoreTokens()) continue;
+
+            String recipient = tokenizer.nextToken();
+            if (!(recipient.equals(ALL_PLAYERS) || recipient.equals(String.valueOf(client.getId())))) continue;
+
+            String sender = tokenizer.nextToken();
+            // TODO Extra: Lägg till check här för att se om avsändaren är med i address-listan (för säkerhet)
+
+            String content = tokenizer.nextToken();
+            String token = "";
+            switch (content) {
+                case CURRENT_AMOUNT_OF_PLAYERS:
+                    token = tokenizer.nextToken();
+                    totalPlayers = Integer.parseInt(token);
+                    break;
+
+                case ENOUGH_PLAYERS:
+                    token = tokenizer.nextToken();
+                    totalPlayers = Integer.parseInt(token);
+                    return;
+            }
+
+        }
+
     }
 
     private boolean isGameOver() {
