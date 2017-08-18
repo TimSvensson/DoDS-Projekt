@@ -34,6 +34,7 @@ public class Game implements Runnable {
     private final String GET_TOTAL_PLAYERS = PREFIX + "GET_TOTAL_PLAYERS";
     private final String ENOUGH_PLAYERS = PREFIX + "ENOUGH_PLAYERS";
     private final String CURRENT_AMOUNT_OF_PLAYERS = PREFIX  + "CURRENT_AMOUNT_OF_PLAYERS";
+    private final String GAMESTATE = PREFIX + "GAMESTATE";
 
     /**
      * The Integer holds the turn of the players in the game, the Address hold the IP and ID of the corresponding clients
@@ -241,6 +242,7 @@ public class Game implements Runnable {
     private void updateGUI(Board newGameState) {
         gameState = newGameState;
 
+        // TODO!!! Fortsätt härifrån
         Player previousPlayer = gameState.getPreviousPlayer();
         Square currentSquare = gameState.getCurrentSquare();
         Square previousSquare = gameState.getPreviousSquare();
@@ -258,11 +260,39 @@ public class Game implements Runnable {
     }
 
     private void sendToServer(Board gameState) {
-        client.write(gsonParser.toJson(gameState));
+        String gsToSend = gsonParser.toJson(gameState);
+        createAndSendMessage(ALL_PLAYERS, GAMESTATE + " " + gsToSend);
     }
 
     private Board readFromServer() {
-        return gsonParser.fromJson(client.read(), Board.class);
+        String JSONgameState = "";
+
+        while (true) {
+            String message = client.read();
+
+            StringTokenizer tokenizer = new StringTokenizer(message);
+            if (!tokenizer.hasMoreTokens()) continue;
+
+            String recipient = tokenizer.nextToken();
+            if (!(recipient.equals(ALL_PLAYERS) || recipient.equals(String.valueOf(client.getId())))) continue;
+
+            String sender = tokenizer.nextToken();
+            // TODO Extra: Lägg till check här för att se om avsändaren är med i address-listan (för säkerhet)
+
+            String content = tokenizer.nextToken();
+            switch (content) {
+                case GAMESTATE:
+                    StringBuilder sb = new StringBuilder();
+                    while (tokenizer.hasMoreTokens()) {
+                        sb.append(tokenizer.nextToken());
+                    }
+                    JSONgameState = sb.toString();
+                    break;
+            }
+            break;
+        }
+
+        return gsonParser.fromJson(JSONgameState, Board.class);
     }
 
     private void play(Board JSONgameState) {
