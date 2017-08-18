@@ -267,7 +267,6 @@ private boolean listen(BufferedReader reader) throws IOException {
 								write(Flags.client_list);
 								break;
 						case Flags.client_list:
-								System.out.println(line);
 								clients = new ArrayList<>(setAddressList(line));
 								break;
 						case Flags.id:

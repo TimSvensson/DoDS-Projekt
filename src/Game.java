@@ -44,6 +44,9 @@ public class Game implements Runnable {
         if (iAmHost()) initGame();
         else joinGame(host, port); // TODO Make host and port dynamic
 
+        System.out.println("isHost = " + isHost);
+        if(!isHost) totalPlayers = listOfPlayers.size();
+
         System.out.println("Waiting for the player count to rise to " + totalPlayers + "...");
         while (listOfClients.size() < totalPlayers) refreshListOfClients();
         System.out.println("We finally have " + totalPlayers + " players!!");
@@ -140,6 +143,17 @@ public class Game implements Runnable {
     private void joinGame(String host, int port) {
         client = new Client(host, port);
         client.setup();
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Connected to " + host + " at port " + port);
+
+        for (int i = 0; i < 10; i++) refreshListOfClients();
+
+        System.out.println("listOfClients.size(): " + listOfClients.size());
+        System.out.println("listOfPlayers.size(): " + listOfPlayers.size());
     }
 
     private boolean isGameOver() {
@@ -204,21 +218,17 @@ public class Game implements Runnable {
     private void refreshListOfClients() {
         List<Address> addresses = client.getClients();
 
+        System.out.println("addresses.size(): " + addresses.size());
+
         listOfClients = new HashMap<>();
         listOfPlayers = new ArrayList<>();
 
         if (addresses != null) {
+            System.out.println("addresses != null!");
             for (int i = 0; i < addresses.size(); i++) {
                 listOfClients.put(i, addresses.get(i));
                 listOfPlayers.add(new Player(i, "Player " + i, addresses.get(i).getID()));
-                System.out.println("Added " + i);
             }
         }
-
-        // Tillfälligt skit början
-        for (int i = 0; i < listOfClients.size(); i++) {
-            System.out.println(listOfClients.get(i));
-        }
-        // Tillfälligt skit slut
     }
 }
