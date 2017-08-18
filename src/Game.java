@@ -231,4 +231,8 @@ public class Game implements Runnable {
             }
         }
     }
+    
+    private String createMessage(String recipient, String sender, String content) {
+        return String.join(" ", recipient, sender, content);
+    }
 }
