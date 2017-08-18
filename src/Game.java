@@ -232,6 +232,10 @@ public class Game implements Runnable {
         }
     }
     
+    private void createAndSendMessage(String recipient, String content) {
+        client.write((createMessage(recipient, content)));
+    }
+    
     private String createMessage(String recipient, String content) {
         return String.join(" ", recipient, String.valueOf(client.getId()), content);
     }
