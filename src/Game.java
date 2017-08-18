@@ -37,13 +37,10 @@ public class Game implements Runnable {
     private final String GAMESTATE = PREFIX + "GAMESTATE";
 
     /**
-     * The Integer holds the turn of the players in the game, the Address hold the IP and ID of the corresponding clients
+     * The Integer holds the turn of the Address to the corresponding in the game
      */
     HashMap<Integer, Address> listOfClients = new HashMap<>();
 
-    /**
-     * The list of players
-     */
     List<Player> listOfPlayers = new ArrayList<>();
 
     public Game() {}
