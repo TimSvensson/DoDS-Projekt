@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 /**
- * Created by axelhellman on 2016-12-08.
+ * Created by Haubir on 2017-08-09.
  */
 
 public class Game implements Runnable {
