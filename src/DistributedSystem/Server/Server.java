@@ -56,6 +56,7 @@ private int nextID = 0;
 // TODO Add constructor with no port
 
 public Server(int port) {
+		
 		this.port = port;
 }
 
@@ -74,23 +75,27 @@ public void setup() throws IOException {
 
 @Override
 public void run() {
+		
 		Logger.log("Starting!");
 		mainServerSetup();
 		Logger.log("Stopping!");
 }
 
 public void terminate() {
+		
 		Logger.log("Terminating server.");
 		terminate = true;
 		echo(Flags.server_terminating);
 }
 
 public boolean isTerminated() {
+		
 		return terminate && (clients == null) && (echoThread == null);
 }
 
 // This will shut down the server incorrectly
 public void crash() {
+		
 		int sleepTime = 1000;
 		closeAllConnections();
 		closeServerEcho();
@@ -136,6 +141,7 @@ private void mainServerSetup() {
 }
 
 private void waitForConnection(ServerSocket lss) throws IOException {
+		
 		try {
 				//Logger.log("Waiting for new connection.");
 				Connection connection = new Connection(lss.accept(), getNextClientID());
@@ -151,7 +157,7 @@ private void waitForConnection(ServerSocket lss) throws IOException {
 						startNewServerDock(connection, threadName);
 						
 						echo(Flags.new_client);
-				
+						
 				} else if (connectionType.equals(Flags.server_backup)) {
 						
 						backupServers.add(connection);
@@ -159,7 +165,7 @@ private void waitForConnection(ServerSocket lss) throws IOException {
 						startNewServerDock(connection, threadName);
 						
 						echo(Flags.new_backup_server + " " + connection.toString());
-				
+						
 				} else {
 						// Error has occurred
 						Logger.log("Unable to identify connection.");
@@ -173,6 +179,7 @@ private void waitForConnection(ServerSocket lss) throws IOException {
 }
 
 private void startNewServerDock(Connection connection, String threadName) {
+		
 		ServerDock serverDock = new ServerDock(connection);
 		Thread t = new Thread(serverDock, threadName);
 		t.setDaemon(true);
@@ -180,10 +187,12 @@ private void startNewServerDock(Connection connection, String threadName) {
 }
 
 private void echo(String s) {
+		
 		echoQueue.offer(s);
 }
 
 private void closeAllConnections() {
+		
 		if (clients != null) {
 				synchronized (clients) {
 						Iterator<Connection> iterator = clients.iterator();
@@ -213,6 +222,7 @@ private void closeAllConnections() {
 }
 
 private void closeServerEcho() {
+		
 		if (echoThread == null) {
 				return;
 		}
@@ -230,14 +240,17 @@ private void closeServerEcho() {
 //<editor-fold desc="GettersAndSetters">
 
 public String getAllClients() {
+		
 		return getAllConnections(clients);
 }
 
 public String getAllBackupServers() {
+		
 		return getAllConnections(backupServers);
 }
 
 private String getAllConnections(LinkedBlockingQueue<Connection> l) {
+		
 		if (l == null) {
 				return null;
 		}
@@ -250,6 +263,7 @@ private String getAllConnections(LinkedBlockingQueue<Connection> l) {
 }
 
 private int getNextClientID() {
+		
 		int id = nextID;
 		nextID++;
 		return id;
@@ -257,14 +271,17 @@ private int getNextClientID() {
 
 //</editor-fold>
 
+
 //<editor-fold desc="Inner Classes">
 private class Connection {
+		
 		private final int id;
 		private Socket socket;
 		private PrintWriter writer;
 		private BufferedReader reader;
 		
 		public Connection(Socket pSocket, int pId) throws IOException {
+				
 				id = pId;
 				socket = pSocket;
 				writer = new PrintWriter(pSocket.getOutputStream());
@@ -272,53 +289,64 @@ private class Connection {
 		}
 		
 		public void write(String s) {
+				
 				writer.println(s);
 				writer.flush();
 		}
 		
 		public String read() throws IOException {
+				
 				return reader.readLine();
 		}
 		
 		public void close() throws IOException {
+				
 				writer.close();
 				reader.close();
 				socket.close();
 		}
 		
 		public int getPort() {
+				
 				return socket.getPort();
 		}
 		
 		public String getHost() {
+				
 				return socket.getInetAddress().getHostName();
 		}
 		
 		public int getID() {
+				
 				return id;
 		}
 		
 		@Override
 		public String toString() {
+				
 				return getHost() + " " + getPort() + " " + getID();
 		}
 }
+
 
 private class ServerDock implements Runnable {
 		
 		private Connection client;
 		
 		public ServerDock(Connection pClient) {
+				
 				client = pClient;
 		}
 		
 		@Override
 		public void run() {
+				
 				Logger.log("Starting ServerDock.");
 				
 				try {
 						Logger.log("Waiting for incoming messages.");
 						String s;
+						// TODO Implement StringTokenizer on read
 						while ((s = client.read()) != null) {
 								Logger.log("Received: " + s);
 								switch (s) {
@@ -333,6 +361,8 @@ private class ServerDock implements Runnable {
 												client.write(Flags.id + " " + client.getID());
 												break;
 										case Flags.client:
+												Logger.log("Received \"" + Flags.client + "\", " +
+														   "something's gone wrong.");
 												break;
 										case Flags.client_list:
 												client.write(
@@ -341,6 +371,7 @@ private class ServerDock implements Runnable {
 										case Flags.disconnect:
 												//TODO remove client from list
 												break;
+										
 										default:
 												echo(s);
 								}
@@ -355,13 +386,24 @@ private class ServerDock implements Runnable {
 		
 		@Override
 		public String toString() {
+				
 				return client.getHost() + " " + client.getPort();
 		}
 }
 
+
 private class ServerEcho implements Runnable {
 		
-		@Override
+		private void writeToAll(String s) {
+				
+				Logger.log("Echoing \"" + s + "\"");
+				for (Connection c : clients) {
+						c.write(s);
+				}
+				for (Connection c : backupServers) {
+						c.write(s);
+				}
+		}		@Override
 		public void run() {
 				
 				Logger.log("Starting ServerEcho.");
@@ -378,15 +420,7 @@ private class ServerEcho implements Runnable {
 				Logger.log("Stopping ServerEcho.");
 		}
 		
-		private void writeToAll(String s) {
-				Logger.log("Echoing \"" + s + "\"");
-				for (Connection c : clients) {
-						c.write(s);
-				}
-				for (Connection c : backupServers) {
-						c.write(s);
-				}
-		}
+
 }
 //</editor-fold>
 }

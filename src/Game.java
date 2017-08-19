@@ -55,7 +55,10 @@ public class Game implements Runnable {
 
         System.out.println("isHost = " + isHost);
 
-        if (isHost) setupGame();
+        if (isHost) {
+            setupGame();
+            sendToServer(gameState);
+        }
         else waitForGameToStart();
         System.out.println("We finally have " + totalPlayers + " players!!");
 
@@ -182,7 +185,9 @@ public class Game implements Runnable {
             String content = tokenizer.nextToken();
             switch (content) {
                 case GET_TOTAL_PLAYERS:
-                    client.write(createMessage(ALL_PLAYERS, CURRENT_AMOUNT_OF_PLAYERS + " " + String.valueOf(totalPlayers)));
+                    createAndSendMessage(ALL_PLAYERS,
+                                         CURRENT_AMOUNT_OF_PLAYERS + " " +
+                                         String.valueOf(totalPlayers));
                     break;
             }
         }
@@ -262,7 +267,7 @@ public class Game implements Runnable {
     }
 
     private Board readFromServer() {
-        String JSONgameState = "";
+        String JSONGameState = "";
 
         while (true) {
             String message = client.read();
@@ -283,13 +288,10 @@ public class Game implements Runnable {
                     while (tokenizer.hasMoreTokens()) {
                         sb.append(tokenizer.nextToken());
                     }
-                    JSONgameState = sb.toString();
-                    break;
+                    JSONGameState = sb.toString();
+                    return gsonParser.fromJson(JSONGameState, Board.class);
             }
-            break;
         }
-
-        return gsonParser.fromJson(JSONgameState, Board.class);
     }
 
     private void play(Board JSONgameState) {

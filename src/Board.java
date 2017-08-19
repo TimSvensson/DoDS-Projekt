@@ -17,7 +17,7 @@ public class Board {
     private Deck deck_2;
     private Deck deck_3;
     private int currentTurn = 0;
-    private int previousTurn = -1;
+    private int previousTurn = 0;
 
     private String currentPlayerIP;
     private int currentPlayerId;
