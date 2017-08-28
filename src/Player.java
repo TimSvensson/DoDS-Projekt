@@ -36,6 +36,11 @@ public class Player {
         this.turn = turn;
     }
 
+    public int getPrevPosition() {
+        
+        return prevPosition;
+    }
+
     public int getPosition(){
         return this.position;
     }

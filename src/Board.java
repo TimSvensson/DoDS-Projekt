@@ -6,7 +6,7 @@ import java.util.List;
  */
 public class Board {
     private Dice dice = new Dice();
-    private List<Player> listOfPlayers = new ArrayList<>(); // TODO Förklara varför används arrayer och inte listor? -Tim
+    private List<Player> listOfPlayers = new ArrayList<>();
     String [] nameOfSquares = {
             "Street 1", "Street 2", "Street 3", "Street 4", "Street 5", "Street 6", "Street 7", "Street 8","Street 9", "Street 10",
             "Street 11", "Street 12", "Street 13", "Street 14", "Street 15", "Street 16", "Street 17", "Street 18","Street 19", "Street 20",
@@ -117,6 +117,14 @@ public class Board {
 
     public Player getCurrentPlayer() {
         return listOfPlayers.get(currentTurn);
+    }
+    
+    public Square getPreviouseSquareOfPlayer(int player) {
+        return listOfSquares[listOfPlayers.get(player).getPrevPosition()];
+    }
+    
+    public Square getCurrentSquareOfPlayer(int player) {
+        return listOfSquares[listOfPlayers.get(player).getPosition()];
     }
 
     public void nextTurn() {

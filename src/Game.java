@@ -246,15 +246,16 @@ public class Game implements Runnable {
 
         // TODO!!! Fortsätt härifrån
         Player previousPlayer = gameState.getPreviousPlayer();
-        Square currentSquare = gameState.getCurrentSquare();
-        Square previousSquare = gameState.getPreviousSquare();
+        Square currentSquare = gameState.getCurrentSquareOfPlayer(previousPlayer.getId());
+        Square previousSquare = gameState.getPreviouseSquareOfPlayer(previousPlayer.getId());
 
-        System.out.println("Player " + previousPlayer.getId() + " tossed " + gameState.getDice().getTotal() + " and moved from " + previousSquare.getName() + " to " + currentSquare.getName());
-
+        System.out.println("Player " + previousPlayer.getId() + " tossed " +
+                           gameState.getDice().getTotal() + " and moved from " +
+                           previousSquare.getName() + " to " + currentSquare.getName());
     }
 
     private void initGUI() {
-        System.out.println("Hello and welcome to the Monopoly game!");
+        System.out.println("Hello and welcome to    the Monopoly game!");
     }
 
     private void terminateClient() {
