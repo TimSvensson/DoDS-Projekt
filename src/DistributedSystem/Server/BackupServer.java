@@ -40,7 +40,7 @@ public Server newMainServer = null;
 int unresolvedPings = 0;
 int unresolvedPingLimit = 4;
 private Address mainServerAddress;
-private int backupPort;
+private int backupPort = -1;
 private int id;
 private ArrayList<Address> backupServers = new ArrayList<>();
 
@@ -48,6 +48,10 @@ private boolean isRunning = true;
 //</editor-fold>
 
 //<editor-fold desc="Constructors">
+
+public BackupServer(Address mainServerAddress) {
+		this.mainServerAddress = mainServerAddress;
+}
 
 public BackupServer(Address pMainServerAddress, int pBackupPort) {
 		mainServerAddress = pMainServerAddress;
@@ -67,7 +71,9 @@ public void run() {
 					 BufferedReader reader = new BufferedReader(
 						 new InputStreamReader(s.getInputStream()));
 					 PrintWriter writer = new PrintWriter(s.getOutputStream())) {
-						backupPort = s.getLocalPort();
+						if (backupPort == -1) {
+								backupPort = s.getLocalPort();
+						}
 						
 						Logger.log("Connected to " + s.toString());
 						
