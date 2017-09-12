@@ -45,6 +45,13 @@ public class Game implements Runnable {
 
     public Game() {}
 
+    // TODO
+    /*
+    If a player drops:
+        remove the player from the list of players
+        tell the rest of the players that one of them has droped
+     */
+    
     public void run() {
         // Initiate the graphical user interface
         initGUI();
@@ -63,7 +70,7 @@ public class Game implements Runnable {
         System.out.println("We finally have " + totalPlayers + " players!!");
 
         // Spel-loop
-        while(true) {
+        while(true) { // TODO Måste antagligen fixa här i
 
             gameState = readFromServer();
 
@@ -84,8 +91,11 @@ public class Game implements Runnable {
 
         if (isHost) server.terminate();
         terminateClient();
-
     }
+    
+    /*
+    
+     */
 
     private void setTotalPlayers(BufferedReader reader) {
         System.out.println("How many players should we expect today?");
@@ -159,8 +169,8 @@ public class Game implements Runnable {
 
         for (int i = 0; i < 10; i++) refreshListOfClients();
 
-        System.out.println("listOfClients.size(): " + listOfClients.size());
-        System.out.println("listOfPlayers.size(): " + listOfPlayers.size());
+        // System.out.println("listOfClients.size(): " + listOfClients.size());
+        // System.out.println("listOfPlayers.size(): " + listOfPlayers.size());
     }
 
     private void setupGame() {
@@ -193,11 +203,9 @@ public class Game implements Runnable {
         }
 
         client.write(createMessage(ALL_PLAYERS, ENOUGH_PLAYERS + " " + String.valueOf(totalPlayers)));
-        System.out.println("We finally have " + totalPlayers + " players!!");
 
         // When all players have joined, the game is created
         gameState = new Board(listOfPlayers);
-
     }
 
     /**
@@ -243,8 +251,7 @@ public class Game implements Runnable {
 
     private void updateGUI(Board newGameState) {
         gameState = newGameState;
-
-        // TODO!!! Fortsätt härifrån
+        
         Player previousPlayer = gameState.getPreviousPlayer();
         Square currentSquare = gameState.getCurrentSquareOfPlayer(previousPlayer.getId());
         Square previousSquare = gameState.getPreviouseSquareOfPlayer(previousPlayer.getId());
@@ -255,7 +262,7 @@ public class Game implements Runnable {
     }
 
     private void initGUI() {
-        System.out.println("Hello and welcome to    the Monopoly game!");
+        System.out.println("Hello and welcome to the Monopoly game!");
     }
 
     private void terminateClient() {
@@ -297,25 +304,42 @@ public class Game implements Runnable {
 
     private void play(Board JSONgameState) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("Type 'Toss dice' to play your round");
-        boolean played = false;
+        System.out.println("Possible actions:");
+        System.out.println("[T]hrow dice, [Q]uit, [C]rash Server, Print [I]nfo.");
+        boolean reading = true;
 
-        while (!played) {
+        while (reading) {
             String input = null;
             try {
                 input = reader.readLine();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (input.toLowerCase().equals("toss dice")) {
-                played = true;
+            if (input == null) {
+                continue;
             }
-            else {
-                System.out.println("You had one job. Why did you join the game if you weren't going to play you fuckface?");
+            switch (input.toLowerCase()) {
+            		case "t":
+                        gameState.movePlayer();
+                        reading = false;
+                        break;
+                    case "q":
+                        // TODO Quit the game.
+                        System.out.println("Quit");
+                        break;
+                    case "c":
+                        // TODO Call the current main server and tell it to crash
+                        System.out.println("Crash Server");
+                        break;
+                    case "i":
+                        // TODO Print the amount of money ehc player has, the property they
+                        // own, and the their current position.
+                        System.out.println("Print info");
+                        break;
+            		default:
+                        System.out.println("Incorrect input.");
             }
         }
-
-        gameState.movePlayer();
     }
 
     private boolean isMyTurn() {
@@ -326,13 +350,12 @@ public class Game implements Runnable {
     private void refreshListOfClients() {
         List<Address> addresses = client.getClients();
 
-        System.out.println("addresses.size(): " + addresses.size());
+        //System.out.println("addresses.size(): " + addresses.size());
 
         listOfClients = new HashMap<>();
         listOfPlayers = new ArrayList<>();
 
         if (addresses != null) {
-            System.out.println("addresses != null!");
             for (int i = 0; i < addresses.size(); i++) {
                 listOfClients.put(i, addresses.get(i));
                 listOfPlayers.add(new Player(i, "Player " + i, addresses.get(i).getID()));
