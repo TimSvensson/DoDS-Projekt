@@ -9,6 +9,7 @@
 
 package DistributedSystem.Server;
 
+import DistributedSystem.Address;
 import DistributedSystem.Flags;
 import DistributedSystem.Logger;
 
@@ -40,6 +41,7 @@ private boolean terminate = false;
 private ServerSocket serverSocket;
 private int port;
 private int socketTimeout = 100;
+private final int serverID;
 
 private LinkedBlockingQueue<Connection> clients = new LinkedBlockingQueue<>();
 private LinkedBlockingQueue<Connection> backupServers = new LinkedBlockingQueue<>();
@@ -56,7 +58,13 @@ private int nextID = 0;
 // TODO Add constructor with no port
 
 public Server(int port) {
-		
+	this(port, 0);
+}
+
+public Server(int port, int serverID) {
+
+		this.serverID = serverID;
+		this.nextID = this.serverID + 1;
 		this.port = port;
 }
 
@@ -238,6 +246,10 @@ private void closeServerEcho() {
 //</editor-fold>
 
 //<editor-fold desc="GettersAndSetters">
+
+public Address getServerAddress() {
+	return new Address(serverSocket.getInetAddress().getHostAddress(), serverSocket.getLocalPort(), -1);
+}
 
 public String getAllClients() {
 		
