@@ -20,31 +20,31 @@ package DistributedSystem;
  * @since JDK 1.8
  */
 public class Address {
-
-private final String address;
-private final int port;
-private final int id;
-
-public Address(String address, int port, int id) {
+	
+	private final String address;
+	private final int port;
+	private final int id;
+	
+	public Address(String address, int port, int id) {
 		this.port = port;
 		this.address = address;
 		this.id = id;
-}
-
-public int getPort() {
+	}
+	
+	public int getPort() {
 		return port;
-}
-
-public String getAddress() {
+	}
+	
+	public String getAddress() {
 		return address;
-}
-
-public int getID() {
+	}
+	
+	public int getID() {
 		return id;
-}
-
-@Override
-public String toString() {
+	}
+	
+	@Override
+	public String toString() {
 		return address + " " + port + " " + id;
-}
+	}
 }

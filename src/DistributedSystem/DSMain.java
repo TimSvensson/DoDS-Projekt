@@ -20,31 +20,31 @@ package DistributedSystem;
  * @since JDK 1.8
  */
 public class DSMain {
-
+    
     //<editor-fold desc="FieldVariables">
-
+    
     //</editor-fold>
-
+    
     //<editor-fold desc="Constructors">
     public DSMain() {
-
+    
     }
     //</editor-fold>
-
+    
     //<editor-fold desc="GettersAndSetters">
-
+    
     //</editor-fold>
-
+    
     //<editor-fold desc="PublicMethods">
     public static void main(String[] args) {
         new DSTest().runTests();
-
+        
         System.exit(0);
     }
     //</editor-fold>
-
+    
     //<editor-fold desc="PrivateMethods">
-
+    
     //</editor-fold>
-
+    
 }

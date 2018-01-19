@@ -27,21 +27,21 @@ import java.util.Collections;
  * @since JDK 1.8
  */
 public class DSTest {
-
-//<editor-fold desc="FieldVariables">
-//</editor-fold>
-
-//<editor-fold desc="Constructors">
-public DSTest() {
-
-}
-//</editor-fold>
-
-//<editor-fold desc="GettersAndSetters">
-//</editor-fold>
-
-//<editor-fold desc="PublicMethods">
-public void runTests() {
+	
+	//<editor-fold desc="FieldVariables">
+	//</editor-fold>
+	
+	//<editor-fold desc="Constructors">
+	public DSTest() {
+	
+	}
+	//</editor-fold>
+	
+	//<editor-fold desc="GettersAndSetters">
+	//</editor-fold>
+	
+	//<editor-fold desc="PublicMethods">
+	public void runTests() {
 		boolean[] results = new boolean[5];
 		String resFormat = "%s %25s %10B";
 		int lengthOfBanner = 60;
@@ -49,40 +49,40 @@ public void runTests() {
 		System.out.println("runTest(): Starting tests.");
 		
 		try {
-				int wait = 500;
-				
-				String t1 = "oneClientEchoTest";
-				System.out.println(getBanner(t1, lengthOfBanner));
-				System.out.println(String.format(resFormat, "RESULTS:", "oneClientEchoTest",
-										 results[0] = oneClientEchoTest()));
-				Thread.sleep(wait);
-				
-				String t2 = "twoClientEchoTest";
-				System.out.println(getBanner(t2, lengthOfBanner));
-				System.out.println(String.format(resFormat, "RESULTS:", "twoClientEchoTest",
-										 results[1] = twoClientEchoTest()));
-				Thread.sleep(wait);
-				
-				String t3 = "clientDisconnectTest";
-				System.out.println(getBanner(t3, lengthOfBanner));
-				System.out.println(String.format(resFormat, "RESULTS:", "clientDisconnectTest",
-										 results[2] = clientDisconnectTest()));
-				Thread.sleep(wait);
-				
-				String t4 = "serverTerminationTest";
-				System.out.println(getBanner(t4, lengthOfBanner));
-				System.out.println(String.format(resFormat, "RESULTS:", "serverTerminationTest",
-										 results[3] = serverTerminationTest()));
-				Thread.sleep(wait);
-				
-				String t5 = "backupServerTest";
-				System.out.println(getBanner(t5, lengthOfBanner));
-				System.out.println(String.format(resFormat, "RESULTS:", "backupServerTest",
-										 results[4] = backupServerTest()));
-				
-				Thread.sleep(wait);
+			int wait = 500;
+			
+			String t1 = "oneClientEchoTest";
+			System.out.println(getBanner(t1, lengthOfBanner));
+			System.out.println(String.format(resFormat, "RESULTS:", "oneClientEchoTest",
+											 results[0] = oneClientEchoTest()));
+			Thread.sleep(wait);
+			
+			String t2 = "twoClientEchoTest";
+			System.out.println(getBanner(t2, lengthOfBanner));
+			System.out.println(String.format(resFormat, "RESULTS:", "twoClientEchoTest",
+											 results[1] = twoClientEchoTest()));
+			Thread.sleep(wait);
+			
+			String t3 = "clientDisconnectTest";
+			System.out.println(getBanner(t3, lengthOfBanner));
+			System.out.println(String.format(resFormat, "RESULTS:", "clientDisconnectTest",
+											 results[2] = clientDisconnectTest()));
+			Thread.sleep(wait);
+			
+			String t4 = "serverTerminationTest";
+			System.out.println(getBanner(t4, lengthOfBanner));
+			System.out.println(String.format(resFormat, "RESULTS:", "serverTerminationTest",
+											 results[3] = serverTerminationTest()));
+			Thread.sleep(wait);
+			
+			String t5 = "backupServerTest";
+			System.out.println(getBanner(t5, lengthOfBanner));
+			System.out.println(String.format(resFormat, "RESULTS:", "backupServerTest",
+											 results[4] = backupServerTest()));
+			
+			Thread.sleep(wait);
 		} catch (InterruptedException pE) {
-				pE.printStackTrace();
+			pE.printStackTrace();
 		}
 		
 		System.out.println(getBanner("RESULTS", lengthOfBanner));
@@ -93,11 +93,11 @@ public void runTests() {
 		System.out.println(String.format(resFormat, "RESULTS:", "backupServerTest", results[4]));
 		
 		System.out.println("runTest(): Tests done.");
-}
-//</editor-fold>
-
-//<editor-fold desc="PrivateMethods">
-private String getBanner(String s, int lengthOfBanner) {
+	}
+	//</editor-fold>
+	
+	//<editor-fold desc="PrivateMethods">
+	private String getBanner(String s, int lengthOfBanner) {
 		
 		String flareChar = "=";
 		String whiteSpaceChar = " ";
@@ -108,19 +108,19 @@ private String getBanner(String s, int lengthOfBanner) {
 		
 		banner = banner + String.join("", Collections.nCopies(flareLength, flareChar));
 		if (lengthOfString % 2 == 0) {
-				banner = banner + String.join("", Collections.nCopies(whiteSpace, whiteSpaceChar));
+			banner = banner + String.join("", Collections.nCopies(whiteSpace, whiteSpaceChar));
 		} else {
-				banner = banner + String.join("", Collections.nCopies(whiteSpace-1,
-																	  whiteSpaceChar));
+			banner = banner + String.join("", Collections.nCopies(whiteSpace-1,
+																  whiteSpaceChar));
 		}
 		banner = banner + String.join("", s);
 		banner = banner + String.join("", Collections.nCopies(whiteSpace, whiteSpaceChar));
 		banner = banner + String.join("", Collections.nCopies(flareLength, flareChar));
 		
 		return banner;
-}
-
-private boolean oneClientEchoTest() {
+	}
+	
+	private boolean oneClientEchoTest() {
 		//TODO One client sends a msg to one server, all clients receives the msg.
 		
 		final String host = "localhost";
@@ -132,9 +132,9 @@ private boolean oneClientEchoTest() {
 		Client c1 = new Client(host, port);
 		
 		try {
-				server.setup();
+			server.setup();
 		} catch (IOException e) {
-				e.printStackTrace();
+			e.printStackTrace();
 		}
 		c1.setup();
 		
@@ -145,20 +145,20 @@ private boolean oneClientEchoTest() {
 		
 		String echo1 = c1.read();
 		if (!echo1.equals(shout1)) {
-				result = false;
+			result = false;
 		}
 		
 		String echo2 = c1.read();
 		if (!echo2.equals(shout2)) {
-				result = false;
+			result = false;
 		}
 		
 		server.terminate();
 		
 		return result;
-}
-
-private boolean twoClientEchoTest() {
+	}
+	
+	private boolean twoClientEchoTest() {
 		
 		boolean result = true;
 		
@@ -167,9 +167,9 @@ private boolean twoClientEchoTest() {
 		
 		Server s = new Server(port);
 		try {
-				s.setup();
+			s.setup();
 		} catch (IOException e) {
-				e.printStackTrace();
+			e.printStackTrace();
 		}
 		
 		Client shout = new Client(host, port);
@@ -185,39 +185,42 @@ private boolean twoClientEchoTest() {
 		shout.write(s1);
 		shout.write(s2);
 		shout.write(s3);
-
+		
 		// Check that shout received the strings in correct order
 		if (!(shout.read().equals(s1) && shout.read().equals(s2) && shout.read().equals(s3))) {
-				Logger.log("Client shout read wrong.");
-				result = false;
+			Logger.log("Client shout read wrong.");
+			result = false;
 		}
 		
 		// Check that echo received the strings in correct order
+		Logger.log("Resp1");
 		String eResp1 = echo.read();
+		Logger.log("Resp2");
 		String eResp2 = echo.read();
+		Logger.log("Resp3");
 		String eResp3 = echo.read();
 		
 		Logger.log("TEST: Echo received: " + eResp1 + " " + eResp2 + " " + eResp3);
 		if (!(eResp1.equals(s1) && eResp2.equals(s2) && eResp3.equals(s3))) {
-				Logger.log("Client echo read wrong.");
-				result = false;
+			Logger.log("Client echo read wrong.");
+			result = false;
 		}
 		
 		s.terminate();
 		
 		return result;
-}
-
-private boolean clientDisconnectTest() {
+	}
+	
+	private boolean clientDisconnectTest() {
 		
 		String host = "localhost";
 		int port = 9003;
 		
 		Server server = new Server(port);
 		try {
-				server.setup();
+			server.setup();
 		} catch (IOException e) {
-				e.printStackTrace();
+			e.printStackTrace();
 		}
 		
 		Client c1 = new Client(host, port);
@@ -232,8 +235,8 @@ private boolean clientDisconnectTest() {
 		c3.write(s1);
 		
 		if (!(c1.read().equals(s1) && c2.read().equals(s1) && c3.read().equals(s1))) {
-				Logger.log("String s1 misread.");
-				return false;
+			Logger.log("String s1 misread.");
+			return false;
 		}
 		
 		c1.disconnect();
@@ -242,8 +245,8 @@ private boolean clientDisconnectTest() {
 		c3.write(s2);
 		
 		if (!(c2.read().equals(s2) && c3.read().equals(s2))) {
-				Logger.log("String s2 misread.");
-				return false;
+			Logger.log("String s2 misread.");
+			return false;
 		}
 		
 		server.terminate();
@@ -251,9 +254,9 @@ private boolean clientDisconnectTest() {
 		c3.disconnect();
 		
 		return true;
-}
-
-private boolean serverTerminationTest() {
+	}
+	
+	private boolean serverTerminationTest() {
 		String host = "localhost";
 		int port = 9004;
 		
@@ -262,9 +265,9 @@ private boolean serverTerminationTest() {
 		
 		Server server = new Server(port);
 		try {
-				server.setup();
+			server.setup();
 		} catch (IOException e) {
-				e.printStackTrace();
+			e.printStackTrace();
 		}
 		
 		c1.setup();
@@ -277,31 +280,31 @@ private boolean serverTerminationTest() {
 		String c2Echo = c2.read();
 		
 		if (!(test.equals(c1Echo) && test.equals(c2Echo))) {
-				Logger.log("TEST: Sanity check failed.");
-				return false;
+			Logger.log("TEST: Sanity check failed.");
+			return false;
 		}
 		
 		server.terminate();
 		try {
-				Thread.sleep(200);
+			Thread.sleep(200);
 		} catch (InterruptedException e) {
-				e.printStackTrace();
+			e.printStackTrace();
 		}
 		
 		if (!(c1.isDisconnected() && c2.isDisconnected())) {
-				Logger.log("TEST: c1 or c2 has not disconnected properly.");
-				return false;
+			Logger.log("TEST: c1 or c2 has not disconnected properly.");
+			return false;
 		}
 		
 		if (!server.isTerminated()) {
-				Logger.log("TEST: Server has not terminated.");
-				return false;
+			Logger.log("TEST: Server has not terminated.");
+			return false;
 		}
 		
 		return true;
-}
-
-private boolean backupServerTest() {
+	}
+	
+	private boolean backupServerTest() {
 		boolean result = false;
 		
 		//TODO When a Server crashes, a Backup Server takes over.
@@ -320,9 +323,9 @@ private boolean backupServerTest() {
 		Client c2 = new Client(host, port);
 		
 		try {
-				ms.setup();
+			ms.setup();
 		} catch (IOException e) {
-				e.printStackTrace();
+			e.printStackTrace();
 		}
 		bs1.setup();
 		bs2.setup();
@@ -345,9 +348,9 @@ private boolean backupServerTest() {
 		ms.crash();
 		
 		try {
-				Thread.sleep(100);
+			Thread.sleep(100);
 		} catch (InterruptedException e) {
-				e.printStackTrace();
+			e.printStackTrace();
 		}
 		
 		// TODO Check to see if backupServer takes over
@@ -364,7 +367,7 @@ private boolean backupServerTest() {
 		Logger.log("TEST: c2Resp: " + c2Resp2);
 		
 		if (c1Resp2.equals(test2) && c2Resp2.equals(test2)) {
-				result = true;
+			result = true;
 		}
 		
 		ms.terminate();
@@ -373,7 +376,7 @@ private boolean backupServerTest() {
 		bs2.terminate();
 		
 		return result;
-}
-//</editor-fold>
-
+	}
+	//</editor-fold>
+	
 }
